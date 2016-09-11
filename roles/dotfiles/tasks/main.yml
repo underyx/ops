@@ -3,3 +3,15 @@
 
 - name: install dotfiles
   command: ~/dotfiles/install
+
+- name: create local environment file
+  file: path=~/.zshlocal/pre/environment state=touch
+
+- name: get python libs path
+  command: python3 -c "import site; print(site.getsitepackages()[0])"
+  register: get_python_libs_path
+
+- name: set up powerline
+  lineinfile: >
+    dest=~/.zshlocal/pre/environment
+    line='export POWERLINE_BASE_DIR={{ get_python_libs_path.stdout }}'

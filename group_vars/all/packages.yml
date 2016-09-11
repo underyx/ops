@@ -23,9 +23,17 @@ common_apt_packages:
   - tmux
   - zsh
 
-common_pip_packages:
+common_pip2_packages:
   - passlib
   - pip
+  - setuptools
+  - virtualenv
+  - wheel
+
+common_pip3_packages:
+  - neovim
+  - pip
+  - powerline-status
   - setuptools
   - virtualenv
   - wheel
