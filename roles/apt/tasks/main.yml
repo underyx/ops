@@ -1,0 +1,8 @@
+---
+ - name: install unattended-upgrades apt package
+   apt: name=unattended-upgrades state=present
+
+ - name: upload auto-upgrades config
+   copy: |
+    src=auto-upgrades dest=/etc/apt/apt.conf.d/20auto-upgrades
+    owner=root group=root mode=0644

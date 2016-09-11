@@ -1,0 +1,12 @@
+---
+- name: create personal user account
+  user: name={{ user }} groups=sudo shell=/usr/bin/zsh
+
+- name: add personal ssh key
+  authorized_key: user={{ user }} key={{ key }}
+
+- name: allow sudo group to use sudo without a password
+  lineinfile: >
+    dest=/etc/sudoers regexp='^%sudo' validate='visudo -cf %s'
+    line='%sudo ALL=(ALL) NOPASSWD: ALL'
+  when: ansible_os_family == 'Debian'

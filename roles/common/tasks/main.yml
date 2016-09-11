@@ -1,0 +1,21 @@
+---
+- name: generate system locale
+  locale_gen: name={{ locale }} state=present
+
+- name: set system locale
+  template: src=locale.j2 dest=/etc/default/locale
+  when: ansible_system == 'Linux'
+
+- name: set timezone to utc
+  command: timedatectl set-timezone UTC
+  when: ansible_system == 'Linux' and ansible_date_time.tz != 'UTC'
+
+- name: set hostname
+  hostname: name={{ inventory_hostname }}
+
+- name: refresh facts to use the new hostnames
+  action: setup
+
+- include: packages.yml
+
+- include: users.yml user=underyx key=https://files.underyx.me/id_rsa.pub

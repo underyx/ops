@@ -1,0 +1,5 @@
+- name: download dotfiles repo
+  git: repo=https://gitlab.com/underyx/dotfiles dest=~/dotfiles
+
+- name: install dotfiles
+  command: ~/dotfiles/install

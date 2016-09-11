@@ -1,0 +1,31 @@
+common_apt_repos:
+  Debian:
+    - deb http://httpredir.debian.org/debian jessie-backports main
+    - deb http://httpredir.debian.org/debian experimental main
+  Ubuntu:
+    - ppa:neovim-ppa/unstable
+
+common_deb_packages:
+  Debian:
+    - http://ftp.debian.org/debian/pool/main/m/msgpack-c/libmsgpackc2_1.4.2-3_amd64.deb
+    - http://ftp.debian.org/debian/pool/main/u/unibilium/libunibilium0_1.2.0-1_amd64.deb
+    - http://ftp.debian.org/debian/pool/main/libt/libtermkey/libtermkey1_0.18-1_amd64.deb
+    - http://ftp.debian.org/debian/pool/main/libv/libvterm/libvterm0_0~bzr684-1_amd64.deb
+
+common_apt_packages:
+  - curl
+  - git-core
+  - htop
+  - neovim
+  - ntp
+  - python-pip
+  - python3-pip
+  - tmux
+  - zsh
+
+common_pip_packages:
+  - passlib
+  - pip
+  - setuptools
+  - virtualenv
+  - wheel

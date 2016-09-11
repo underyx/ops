@@ -1,0 +1,13 @@
+---
+- name: install apt package
+  apt: name=ntp state=present
+
+- name: render ntp config
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf owner=root group=root mode=0644
+  notify: restart ntp
+
+- name: set ntp to start on launch
+  service: name=ntp enabled=yes
+
+- name: start ntp
+  service: name=ntp state=started

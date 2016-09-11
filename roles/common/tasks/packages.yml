@@ -1,0 +1,20 @@
+---
+- name: add common repos
+  apt_repository: repo={{ item }}
+  with_items: '{{ common_apt_repos[ansible_os_family] }}'
+  when: ansible_pkg_mgr == 'apt'
+
+- name: install common deb packages
+  apt: deb={{ item }}
+  with_items: '{{ common_deb_packages[ansible_os_family] }}'
+
+- name: install common apt packages
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items: '{{ common_apt_packages }}'
+  when: ansible_pkg_mgr == 'apt'
+
+- name: install/update common python packages
+  pip: name={{ item[0] }} executable={{ item[1] }} state=latest
+  with_nested:
+    - '{{ common_pip_packages }}'
+    - [pip2, pip3]

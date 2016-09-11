@@ -1,0 +1,9 @@
+---
+- hosts: all
+  roles:
+   - common
+   - ssh
+   - ntp
+   - { role: apt, when: ansible_pkg_mgr == 'apt' }
+   - dotfiles
+  become: yes
