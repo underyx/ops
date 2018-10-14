@@ -27,6 +27,14 @@
   command: kubeadm init --pod-network-cidr=10.244.0.0/16
   # the pod network cidr is for flannel
 
+- name: set bridge-nf-call-iptables
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
 - name: ensure kubectl config directory exists
   file: path=~/.kube state=directory mode=0700
   become_user: "{{ user }}"
