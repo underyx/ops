@@ -1,9 +1,9 @@
 ---
 - name: create personal user account
-  user: name={{ user }} groups=sudo shell=/usr/bin/zsh
+  user: name={{ user }} groups=sudo shell={{ shell }}
 
 - name: set shell of root user
-  user: name=root shell=/usr/bin/zsh
+  user: name=root shell={{ shell }}
 
 - name: add personal ssh key
   authorized_key: user={{ user }} key={{ key }}

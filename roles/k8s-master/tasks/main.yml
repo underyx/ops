@@ -1,0 +1,4 @@
+- include: firewall.yml
+- include: docker.yml
+- include: k8s.yml
+- include: k8s-config.yml

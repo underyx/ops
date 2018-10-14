@@ -1,15 +1,13 @@
 ---
-- hosts: all
+- hosts: kinetic.underyx.me
   roles:
    - common
+   - packages
+   - users
    - ssh
    - ntp
    - { role: apt, when: ansible_pkg_mgr == 'apt' }
    - dotfiles
   become: yes
-
-- hosts: all
-  roles:
-   - dotfiles
-  become: yes
-  become_user: underyx
+  vars:
+    shell: /usr/bin/zsh

@@ -1,0 +1,45 @@
+- name: install prerequisites
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - apt-transport-https
+
+- name: add google's apt key
+  apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+- name: add kubernetes apt repo
+  apt_repository: repo="deb http://apt.kubernetes.io/ kubernetes-xenial main"
+
+- name: install kubernetes packages
+  apt: pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: lock version of kubernetes packages
+  dpkg_selections: name={{ item }} selection=hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: initialize cluster
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16
+  # the pod network cidr is for flannel
+
+- name: ensure kubectl config directory exists
+  file: path=~/.kube state=directory mode=0700
+  become_user: "{{ user }}"
+
+- name: copy cluster's admin config to user's kubectl config
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: ~{{ user }}/.kube/config
+
+- name: set permissions on user's kubectl config
+  file:
+    path: ~{{ user }}/.kube/config
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: "0600"

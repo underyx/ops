@@ -15,7 +15,3 @@
 
 - name: refresh facts to use the new hostnames
   action: setup
-
-- include: packages.yml
-
-- include: users.yml user=underyx key=https://files.underyx.me/id_rsa.pub

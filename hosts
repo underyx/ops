@@ -1,20 +1,2 @@
-[vps]
 kinetic.underyx.me
-
-[physical]
-maru.home.underyx.me
-kairo.home.underyx.me
-undercompy.home.underyx.me
-
-[windows]
-undercompy.home.underyx.me
-
-[linux]
-kinetic.underyx.me
-maru.home.underyx.me
-
-[macos]
-kairo.home.underyx.me
-
-[digitalocean]
-kinetic.underyx.me
+unicorn.underyx.me  ansible_python_interpreter=/usr/bin/python3

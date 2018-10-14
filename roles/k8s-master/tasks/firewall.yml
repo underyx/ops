@@ -1,0 +1,41 @@
+- name: install ufw
+  apt: pkg=ufw update_cache=yes state=latest
+
+- name: reset ufw
+  ufw:
+    state: reset
+
+- name: enable ufw logging
+  ufw:
+    logging: on
+
+- name: rate limit SSH connections
+  ufw:
+    rule: limit
+    proto: tcp
+    port: ssh
+
+- name: allow Kubernetes API server connections
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 6443
+    comment: Kubernetes API server
+
+- name: allow etcd server client API connections
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 2379:2380
+    comment: etcd server client API
+
+- name: allow Kubelet API, kube-scheduler, kube-controller-manager connections
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 10250:10252
+    comment: Kubelet API, kube-scheduler, kube-controller-manager
+
+- name: enable ufw
+  ufw:
+    state: enabled
