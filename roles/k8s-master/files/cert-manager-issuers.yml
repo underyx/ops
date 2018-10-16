@@ -1,0 +1,36 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: bence@underyx.me
+    privateKeySecretRef:
+      name: letsencrypt-staging-private-key
+    dns01:
+      - name: cf-dns
+        cloudflare:
+          email: underer@gmail.com
+          apiKeySecretRef:
+            name: cloudflare-api-key
+            key: api-key
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+  namespace: kube-system
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: bence@underyx.me
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    dns01:
+      - name: cf-dns
+        cloudflare:
+          email: underer@gmail.com
+          apiKeySecretRef:
+            name: cloudflare-api-key
+            key: api-key
