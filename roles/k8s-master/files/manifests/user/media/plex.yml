@@ -1,0 +1,120 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-config-pvc
+  namespace: media
+  labels:
+    app: plex
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: plex
+  namespace: media
+  labels:
+    app: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: app
+        image: wernight/plex-media-server:autoupdate
+        ports:
+        - containerPort: 32400
+        env:
+          - name: X_PLEX_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: plex-env
+                key: X_PLEX_TOKEN
+        volumeMounts:
+        - name: plex-config
+          mountPath: /config
+        - name: plex-media
+          mountPath: /media
+        livenessProbe:
+          tcpSocket:
+            port: 32400
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: plex-config
+        persistentVolumeClaim:
+          claimName: plex-config-pvc
+      - name: plex-media
+        flexVolume:
+          driver: ceph.rook.io/rook
+          fsType: ceph
+          options:
+            fsName: media-fs
+            clusterNamespace: rook-ceph
+      securityContext:
+        fsGroup: 797
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: plex-svc
+  namespace: media
+spec:
+  ports:
+    - port: 80
+      targetPort: 32400
+  selector:
+    app: plex
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: plex-cert
+  namespace: media
+  labels:
+    app: plex
+spec:
+  secretName: plex-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: plex.underyx.me
+  dnsNames:
+  - plex.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - plex.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: plex-ingress
+  namespace: media
+spec:
+  rules:
+  - host: plex.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: plex-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - plex.underyx.me
+    secretName: plex-tls

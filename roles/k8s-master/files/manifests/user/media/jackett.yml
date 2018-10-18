@@ -1,0 +1,117 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jackett-config-pvc
+  namespace: media
+  labels:
+    app: jackett
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: jackett
+  namespace: media
+  labels:
+    app: jackett
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jackett
+  template:
+    metadata:
+      labels:
+        app: jackett
+    spec:
+      containers:
+      - name: app
+        image: linuxserver/jackett:294
+        ports:
+        - containerPort: 9117
+        env:
+          - name: PUID
+            value: "797"
+          - name: PGID
+            value: "797"
+        volumeMounts:
+        - name: jackett-config
+          mountPath: /config
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9117
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: jackett-config
+        persistentVolumeClaim:
+          claimName: jackett-config-pvc
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      securityContext:
+        fsGroup: 797
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jackett-svc
+  namespace: media
+spec:
+  ports:
+    - port: 80
+      targetPort: 9117
+  selector:
+    app: jackett
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: jackett-cert
+  namespace: media
+  labels:
+    app: jackett
+spec:
+  secretName: jackett-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: jackett.underyx.me
+  dnsNames:
+  - jackett.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - jackett.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jackett-ingress
+  namespace: media
+spec:
+  rules:
+  - host: jackett.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: jackett-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - jackett.underyx.me
+    secretName: jackett-tls

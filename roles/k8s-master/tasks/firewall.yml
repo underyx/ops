@@ -36,6 +36,32 @@
     port: 10250:10252
     comment: Kubelet API, kube-scheduler, kube-controller-manager
 
+- name: allow HTTP
+  ufw:
+    rule: allow
+    proto: tcp
+    port: http
+
+- name: allow HTTPS
+  ufw:
+    rule: allow
+    proto: tcp
+    port: https
+
+- name: allow BitTorrent transport
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 45401:45405
+    comment: BitTorrent transport
+
+- name: allow BitTorrent control
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 45401:45405
+    comment: BitTorrent control
+
 - name: enable ufw
   ufw:
     state: enabled

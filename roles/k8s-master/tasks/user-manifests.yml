@@ -1,0 +1,5 @@
+- name: copy user manifests
+  copy: src=manifests/user dest=/tmp/manifests
+
+- name: apply user manifests
+  command: kubectl apply -f /tmp/manifests/user

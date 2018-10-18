@@ -1,8 +1,8 @@
-- name: copy manifests
-  copy: src=manifests dest=/tmp
+- name: copy system manifests
+  copy: src=manifests/system dest=/tmp/manifests
 
 - name: apply flannel
-  command: kubectl apply -f /tmp/manifests/flannel
+  command: kubectl apply -f /tmp/manifests/system/flannel
 
 - name: install helm
   shell: curl https://raw.githubusercontent.com/helm/helm/v2.11.0/scripts/get | bash
@@ -10,7 +10,7 @@
     warn: no
 
 - name: apply helm tiller role
-  command: kubectl apply -f /tmp/manifests/helm-tiller/role.yml
+  command: kubectl apply -f /tmp/manifests/system/helm-tiller/role.yml
 
 - name: install helm tiller
   command: helm init --service-account tiller
@@ -20,19 +20,19 @@
   ignore_errors: yes  # fails on re-run
 
 - name: apply cert-manager config
-  command: kubectl apply -f /tmp/manifests/cert-manager
+  command: kubectl apply -f /tmp/manifests/system/cert-manager
 
 - name: apply nginx-ingress
-  command: kubectl apply -f /tmp/manifests/nginx-ingress
+  command: kubectl apply -f /tmp/manifests/system/nginx-ingress
 
 - name: apply dashboard
-  command: kubectl apply -f /tmp/manifests/kubernetes-dashboard
+  command: kubectl apply -f /tmp/manifests/system/kubernetes-dashboard
 
 - name: apply rook operator
-  command: kubectl apply -f /tmp/manifests/rook/operator.yml
+  command: kubectl apply -f /tmp/manifests/system/rook/operator.yml
 
 - name: wait for rook operator to be deployed
   command: kubectl rollout status -n rook-ceph-system deployment rook-ceph-operator
 
 - name: apply rook
-  command: kubectl apply -f /tmp/manifests/rook
+  command: kubectl apply -f /tmp/manifests/system/rook

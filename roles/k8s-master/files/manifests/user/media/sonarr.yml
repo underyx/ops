@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarr-config-pvc
+  namespace: media
+  labels:
+    app: sonarr
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: sonarr
+  namespace: media
+  labels:
+    app: sonarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      containers:
+      - name: app
+        image: linuxserver/sonarr:159
+        ports:
+        - containerPort: 8989
+        env:
+          - name: PUID
+            value: "797"
+          - name: PGID
+            value: "797"
+        volumeMounts:
+        - name: sonarr-config
+          mountPath: /config
+        - name: sonarr-media
+          mountPath: /media
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: rtc
+          mountPath: /dev/rtc
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8989
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: sonarr-config
+        persistentVolumeClaim:
+          claimName: sonarr-config-pvc
+      - name: sonarr-media
+        flexVolume:
+          driver: ceph.rook.io/rook
+          fsType: ceph
+          options:
+            fsName: media-fs
+            clusterNamespace: rook-ceph
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: rtc
+        hostPath:
+          path: /dev/rtc
+      securityContext:
+        fsGroup: 797
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: sonarr-svc
+  namespace: media
+spec:
+  ports:
+    - port: 80
+      targetPort: 8989
+  selector:
+    app: sonarr
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: sonarr-cert
+  namespace: media
+  labels:
+    app: sonarr
+spec:
+  secretName: sonarr-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: sonarr.underyx.me
+  dnsNames:
+  - sonarr.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - sonarr.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: sonarr-ingress
+  namespace: media
+spec:
+  rules:
+  - host: sonarr.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: sonarr-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - sonarr.underyx.me
+    secretName: sonarr-tls
