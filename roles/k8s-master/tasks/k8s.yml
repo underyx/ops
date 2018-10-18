@@ -24,8 +24,9 @@
     - kubectl
 
 - name: initialize cluster
-  command: kubeadm init --pod-network-cidr=10.244.0.0/16
-  # the pod network cidr is for flannel
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16  # the pod network cidr is for flannel
+  ignore_errors: yes  # fails on re-run
+
 
 - name: set bridge-nf-call-iptables
   sysctl:
@@ -51,3 +52,8 @@
     owner: "{{ user }}"
     group: "{{ user }}"
     mode: "0600"
+
+- name: allow scheduling on master node
+  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  become_user: "{{ user }}"
+  ignore_errors: yes  # fails on re-run

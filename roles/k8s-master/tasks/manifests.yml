@@ -1,0 +1,38 @@
+- name: copy manifests
+  copy: src=manifests dest=/tmp
+
+- name: apply flannel
+  command: kubectl apply -f /tmp/manifests/flannel
+
+- name: install helm
+  shell: curl https://raw.githubusercontent.com/helm/helm/v2.11.0/scripts/get | bash
+  args:
+    warn: no
+
+- name: apply helm tiller role
+  command: kubectl apply -f /tmp/manifests/helm-tiller/role.yml
+
+- name: install helm tiller
+  command: helm init --service-account tiller
+
+- name: install cert-manager
+  command: helm install --name cert-manager --namespace kube-system stable/cert-manager
+  ignore_errors: yes  # fails on re-run
+
+- name: apply cert-manager config
+  command: kubectl apply -f /tmp/manifests/cert-manager
+
+- name: apply nginx-ingress
+  command: kubectl apply -f /tmp/manifests/nginx-ingress
+
+- name: apply dashboard
+  command: kubectl apply -f /tmp/manifests/kubernetes-dashboard
+
+- name: apply rook operator
+  command: kubectl apply -f /tmp/manifests/rook/operator.yml
+
+- name: wait for rook operator to be deployed
+  command: kubectl rollout status -n rook-ceph-system deployment rook-ceph-operator
+
+- name: apply rook
+  command: kubectl apply -f /tmp/manifests/rook
