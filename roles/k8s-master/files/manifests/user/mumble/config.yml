@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: murmur-config
+  namespace: mumble
+data:
+  murmur.ini: |
+    host=0.0.0.0
+    port=64738
+    serverpassword=
+    registerName=mumble.underyx.me
+
+    database=/db/murmur.sqlite
+    welcometext="<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />"
+    bandwidth=128000
+    users=100
+    sendversion=True
+
+    ice="tcp -h 127.0.0.1 -p 6502"
+
+    [Ice]
+    Ice.Warn.UnknownProperties=1
+    Ice.MessageSizeMax=65536

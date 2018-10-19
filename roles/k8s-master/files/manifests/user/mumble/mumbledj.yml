@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mumbledj-cache
+  namespace: mumble
+  labels:
+    app: mumbledj
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: mumbledj
+  namespace: mumble
+  labels:
+    app: mumbledj
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mumbledj
+  template:
+    metadata:
+      labels:
+        app: mumbledj
+    spec:
+      containers:
+      - name: app
+        command: ["/bin/mumbledj", "--config", "/etc/mumbledj/mumbledj.yaml"]
+        image: underyx/mumbledj
+        volumeMounts:
+        - name: mumbledj-cache
+          mountPath: /root/.cache
+        - name: mumbledj-config
+          mountPath: /etc/mumbledj
+          readOnly: true
+      volumes:
+      - name: mumbledj-cache
+        persistentVolumeClaim:
+          claimName: mumbledj-cache
+      - name: mumbledj-config
+        secret:
+          secretName: mumbledj-config

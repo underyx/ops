@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: murmur-db-pvc
+  labels:
+    app: murmur
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: murmur
+  namespace: mumble
+  labels:
+    app: murmur
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: murmur
+  template:
+    metadata:
+      labels:
+        app: murmur
+    spec:
+      containers:
+      - name: app
+        image: mattikus/murmur:v1.2.19
+        command: ["/opt/murmur/murmur.x86", "-fg", "-v", "-ini", "/etc/murmur/murmur.ini"]
+        ports:
+        - containerPort: 64738
+          hostPort: 64738
+        - containerPort: 64738
+          hostPort: 64738
+          protocol: UDP
+        volumeMounts:
+        - name: murmur-db
+          mountPath: /db
+        - name: murmur-config
+          mountPath: /etc/murmur
+          readOnly: true
+        livenessProbe:
+          tcpSocket:
+            port: 64738
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: murmur-db
+        persistentVolumeClaim:
+          claimName: murmur-db-pvc
+      - name: murmur-config
+        configMap:
+          name: murmur-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: murmur-svc
+  namespace: mumble
+spec:
+  ports:
+    - name: mumble
+      port: 64738
+      targetPort: 64738
+  selector:
+    app: murmur
