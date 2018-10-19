@@ -1,0 +1,53 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: plex-tools-svc
+  namespace: media
+spec:
+  ports:
+    - port: 80
+      targetPort: 33400
+  selector:
+    app: plex
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: plex-tools-cert
+  namespace: media
+  labels:
+    app: plex
+spec:
+  secretName: plex-tools-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: plex-tools.underyx.me
+  dnsNames:
+  - plex-tools.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - plex-tools.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: plex-tools-ingress
+  namespace: media
+spec:
+  rules:
+  - host: plex-tools.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: plex-tools-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - plex-tools.underyx.me
+    secretName: plex-tools-tls
