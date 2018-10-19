@@ -15,3 +15,4 @@ provisioner: ceph.rook.io/block
 parameters:
   pool: replicapool
   clusterNamespace: rook-ceph
+reclaimPolicy: Retain
