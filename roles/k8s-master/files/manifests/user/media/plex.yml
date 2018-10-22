@@ -1,8 +1,7 @@
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: plex-config-pvc
+  name: plex-data-pvc
   namespace: media
   labels:
     app: plex
@@ -12,7 +11,7 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 20Gi
 ---
 kind: Deployment
 apiVersion: apps/v1beta2
@@ -43,19 +42,23 @@ spec:
                 name: plex-env
                 key: X_PLEX_TOKEN
         volumeMounts:
-        - name: plex-config
+        - name: plex-data
           mountPath: /config
         - name: plex-media
           mountPath: /media
+        - name: plex-transcoder
+          mountPath: /tmp/transcoder
         livenessProbe:
           tcpSocket:
             port: 32400
           initialDelaySeconds: 30
           periodSeconds: 30
       volumes:
-      - name: plex-config
+      - name: plex-data
         persistentVolumeClaim:
-          claimName: plex-config-pvc
+          claimName: plex-data-pvc
+      - name: plex-transcoder
+        emptyDir: {}
       - name: plex-media
         flexVolume:
           driver: ceph.rook.io/rook
