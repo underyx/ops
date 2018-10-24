@@ -1,0 +1,132 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bazarr-config-pvc
+  namespace: media
+  labels:
+    app: bazarr
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: bazarr
+  namespace: media
+  labels:
+    app: bazarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazarr
+  template:
+    metadata:
+      labels:
+        app: bazarr
+    spec:
+      containers:
+      - name: app
+        image: linuxserver/bazarr:amd64-b9a987b5-ls4
+        ports:
+        - containerPort: 6767
+        env:
+          - name: PUID
+            value: "797"
+          - name: PGID
+            value: "797"
+        volumeMounts:
+        - name: bazarr-config
+          mountPath: /config
+        - name: bazarr-media
+          mountPath: /media
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: rtc
+          mountPath: /dev/rtc
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 6767
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: bazarr-config
+        persistentVolumeClaim:
+          claimName: bazarr-config-pvc
+      - name: bazarr-media
+        flexVolume:
+          driver: ceph.rook.io/rook
+          fsType: ceph
+          options:
+            fsName: media-fs
+            clusterNamespace: rook-ceph
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: rtc
+        hostPath:
+          path: /dev/rtc
+      securityContext:
+        fsGroup: 797
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: bazarr-svc
+  namespace: media
+spec:
+  ports:
+    - port: 80
+      targetPort: 6767
+  selector:
+    app: bazarr
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: bazarr-cert
+  namespace: media
+  labels:
+    app: bazarr
+spec:
+  secretName: bazarr-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: bazarr.underyx.me
+  dnsNames:
+  - bazarr.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - bazarr.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bazarr-ingress
+  namespace: media
+spec:
+  rules:
+  - host: bazarr.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: bazarr-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - bazarr.underyx.me
+    secretName: bazarr-tls
