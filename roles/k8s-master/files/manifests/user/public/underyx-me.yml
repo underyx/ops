@@ -1,0 +1,90 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: underyx-me
+  namespace: public
+  labels:
+    app: underyx.me
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: underyx.me
+  template:
+    metadata:
+      labels:
+        app: underyx.me
+    spec:
+      containers:
+      - name: app
+        image: underyx/underyx.me
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: underyx-me-svc
+  namespace: public
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: underyx.me
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: underyx-me-cert
+  namespace: public
+  labels:
+    app: underyx.me
+spec:
+  secretName: underyx-me-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: underyx.me
+  dnsNames:
+  - underyx.me
+  - www.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - underyx.me
+      - www.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: underyx-me-ingress
+  namespace: public
+spec:
+  rules:
+  - host: underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: underyx-me-svc
+          servicePort: 80
+        path: /
+  - host: www.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: underyx-me-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - underyx.me
+    - www.underyx.me
+    secretName: underyx-me-tls
