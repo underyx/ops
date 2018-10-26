@@ -6,7 +6,7 @@ metadata:
   labels:
     app: underyx.me
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: underyx.me
