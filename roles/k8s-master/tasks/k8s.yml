@@ -1,7 +1,5 @@
 - name: install prerequisites
-  apt: pkg={{ item }} update_cache=yes state=latest
-  with_items:
-    - apt-transport-https
+  apt: pkg=apt-transport-https update_cache=yes state=latest
 
 - name: add google's apt key
   apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -27,6 +25,11 @@
   command: kubeadm init --pod-network-cidr=10.244.0.0/16  # the pod network cidr is for flannel
   ignore_errors: yes  # fails on re-run
 
+- name: listen on port 10255 for datadog
+  lineinfile:
+    path: /etc/default/kubelet
+    regexp: '^KUBELET_EXTRA_ARGS='
+    line: 'KUBELET_EXTRA_ARGS=--read-only-port=10255'
 
 - name: set bridge-nf-call-iptables
   sysctl:

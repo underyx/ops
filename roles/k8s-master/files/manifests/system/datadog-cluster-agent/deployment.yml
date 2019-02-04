@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: datadog-cluster-agent
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        app: datadog-cluster-agent
+      name: datadog-agent
+      annotations:
+        ad.datadoghq.com/datadog-cluster-agent.check_names: '["prometheus"]'
+        ad.datadoghq.com/datadog-cluster-agent.init_configs: "[{}]"
+        ad.datadoghq.com/datadog-cluster-agent.instances: '[{"prometheus_url": "http://%%host%%:5000/metrics","namespace": "datadog.cluster_agent","metrics": ["go_goroutines","go_memstats_*","process_*","api_requests","datadog_requests","external_metrics"]}]'
+    spec:
+      serviceAccountName: datadog-cluster-agent
+      containers:
+        - image: datadog/cluster-agent:1.1.0
+          imagePullPolicy: Always
+          name: datadog-cluster-agent
+          env:
+            - name: DD_COLLECT_KUBERNETES_EVENTS
+              value: "true"
+            - name: DD_LEADER_ELECTION
+              value: "true"
+            - name: DD_EXTERNAL_METRICS_PROVIDER_ENABLED
+              value: "true"
+            - name: DD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: datadog-api-key
+                  key: key
+            - name: DD_CLUSTER_AGENT_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: datadog-auth-token
+                  key: token
