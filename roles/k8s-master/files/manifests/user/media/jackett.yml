@@ -9,7 +9,7 @@ metadata:
 spec:
   storageClassName: rook-ceph-block
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 50Mi
@@ -32,34 +32,34 @@ spec:
         app: jackett
     spec:
       containers:
-      - name: app
-        image: linuxserver/jackett:294
-        ports:
-        - containerPort: 9117
-        env:
-          - name: PUID
-            value: "797"
-          - name: PGID
-            value: "797"
-        volumeMounts:
-        - name: jackett-config
-          mountPath: /config
-        - name: localtime
-          mountPath: /etc/localtime
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 9117
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        - name: app
+          image: linuxserver/jackett:v0.10.707-ls2
+          ports:
+            - containerPort: 9117
+          env:
+            - name: PUID
+              value: "797"
+            - name: PGID
+              value: "797"
+          volumeMounts:
+            - name: jackett-config
+              mountPath: /config
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9117
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
-      - name: jackett-config
-        persistentVolumeClaim:
-          claimName: jackett-config-pvc
-      - name: localtime
-        hostPath:
-          path: /etc/localtime
+        - name: jackett-config
+          persistentVolumeClaim:
+            claimName: jackett-config-pvc
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
       securityContext:
         fsGroup: 797
 ---
@@ -89,13 +89,13 @@ spec:
     name: letsencrypt
   commonName: jackett.underyx.me
   dnsNames:
-  - jackett.underyx.me
+    - jackett.underyx.me
   acme:
     config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - jackett.underyx.me
+      - http01:
+          ingressClass: nginx
+        domains:
+          - jackett.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -104,14 +104,14 @@ metadata:
   namespace: media
 spec:
   rules:
-  - host: jackett.underyx.me
-    http:
-      paths:
-      - backend:
-          serviceName: jackett-svc
-          servicePort: 80
-        path: /
+    - host: jackett.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: jackett-svc
+              servicePort: 80
+            path: /
   tls:
-  - hosts:
-    - jackett.underyx.me
-    secretName: jackett-tls
+    - hosts:
+        - jackett.underyx.me
+      secretName: jackett-tls

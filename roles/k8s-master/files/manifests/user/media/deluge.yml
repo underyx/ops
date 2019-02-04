@@ -9,7 +9,7 @@ metadata:
 spec:
   storageClassName: rook-ceph-block
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 50Mi
@@ -32,68 +32,68 @@ spec:
         app: deluge
     spec:
       containers:
-      - name: app
-        image: linuxserver/deluge:142
-        ports:
-        - containerPort: 8112
-        - containerPort: 45401
-          hostPort: 45401
-        - containerPort: 45402
-          hostPort: 45402
-        - containerPort: 45403
-          hostPort: 45403
-        - containerPort: 45404
-          hostPort: 45404
-        - containerPort: 45405
-          hostPort: 45405
-        - containerPort: 45401
-          hostPort: 45401
-          protocol: UDP
-        - containerPort: 45402
-          hostPort: 45402
-          protocol: UDP
-        - containerPort: 45403
-          hostPort: 45403
-          protocol: UDP
-        - containerPort: 45404
-          hostPort: 45404
-          protocol: UDP
-        - containerPort: 45405
-          hostPort: 45405
-          protocol: UDP
-        env:
-          - name: PUID
-            value: "797"
-          - name: PGID
-            value: "797"
-        volumeMounts:
-        - name: deluge-config
-          mountPath: /config
-        - name: deluge-media
-          mountPath: /media
-        - name: localtime
-          mountPath: /etc/localtime
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8112
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        - name: app
+          image: linuxserver/deluge:4ad4347d-ls7
+          ports:
+            - containerPort: 8112
+            - containerPort: 45401
+              hostPort: 45401
+            - containerPort: 45402
+              hostPort: 45402
+            - containerPort: 45403
+              hostPort: 45403
+            - containerPort: 45404
+              hostPort: 45404
+            - containerPort: 45405
+              hostPort: 45405
+            - containerPort: 45401
+              hostPort: 45401
+              protocol: UDP
+            - containerPort: 45402
+              hostPort: 45402
+              protocol: UDP
+            - containerPort: 45403
+              hostPort: 45403
+              protocol: UDP
+            - containerPort: 45404
+              hostPort: 45404
+              protocol: UDP
+            - containerPort: 45405
+              hostPort: 45405
+              protocol: UDP
+          env:
+            - name: PUID
+              value: "797"
+            - name: PGID
+              value: "797"
+          volumeMounts:
+            - name: deluge-config
+              mountPath: /config
+            - name: deluge-media
+              mountPath: /media
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8112
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
-      - name: deluge-config
-        persistentVolumeClaim:
-          claimName: deluge-config-pvc
-      - name: deluge-media
-        flexVolume:
-          driver: ceph.rook.io/rook
-          fsType: ceph
-          options:
-            fsName: media-fs
-            clusterNamespace: rook-ceph
-      - name: localtime
-        hostPath:
-          path: /etc/localtime
+        - name: deluge-config
+          persistentVolumeClaim:
+            claimName: deluge-config-pvc
+        - name: deluge-media
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
       securityContext:
         fsGroup: 797
 ---
@@ -124,13 +124,13 @@ spec:
     name: letsencrypt
   commonName: deluge.underyx.me
   dnsNames:
-  - deluge.underyx.me
+    - deluge.underyx.me
   acme:
     config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - deluge.underyx.me
+      - http01:
+          ingressClass: nginx
+        domains:
+          - deluge.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -139,14 +139,14 @@ metadata:
   namespace: media
 spec:
   rules:
-  - host: deluge.underyx.me
-    http:
-      paths:
-      - backend:
-          serviceName: deluge-svc
-          servicePort: 80
-        path: /
+    - host: deluge.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: deluge-svc
+              servicePort: 80
+            path: /
   tls:
-  - hosts:
-    - deluge.underyx.me
-    secretName: deluge-tls
+    - hosts:
+        - deluge.underyx.me
+      secretName: deluge-tls

@@ -1,6 +1,6 @@
 ---
-apiVersion: ceph.rook.io/v1beta1
-kind: Filesystem
+apiVersion: ceph.rook.io/v1
+kind: CephFilesystem
 metadata:
   name: media-fs
   namespace: rook-ceph

@@ -9,7 +9,7 @@ metadata:
 spec:
   storageClassName: rook-ceph-block
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
@@ -32,49 +32,49 @@ spec:
         app: radarr
     spec:
       containers:
-      - name: app
-        image: linuxserver/radarr:134
-        ports:
-        - containerPort: 7878
-        env:
-          - name: PUID
-            value: "797"
-          - name: PGID
-            value: "797"
-        volumeMounts:
-        - name: radarr-config
-          mountPath: /config
-        - name: radarr-media
-          mountPath: /media
-        - name: localtime
-          mountPath: /etc/localtime
-          readOnly: true
-        - name: rtc
-          mountPath: /dev/rtc
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 7878
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        - name: app
+          image: linuxserver/radarr:v0.2.0.1293-ls1
+          ports:
+            - containerPort: 7878
+          env:
+            - name: PUID
+              value: "797"
+            - name: PGID
+              value: "797"
+          volumeMounts:
+            - name: radarr-config
+              mountPath: /config
+            - name: radarr-media
+              mountPath: /media
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: rtc
+              mountPath: /dev/rtc
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7878
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
-      - name: radarr-config
-        persistentVolumeClaim:
-          claimName: radarr-config-pvc
-      - name: radarr-media
-        flexVolume:
-          driver: ceph.rook.io/rook
-          fsType: ceph
-          options:
-            fsName: media-fs
-            clusterNamespace: rook-ceph
-      - name: localtime
-        hostPath:
-          path: /etc/localtime
-      - name: rtc
-        hostPath:
-          path: /dev/rtc
+        - name: radarr-config
+          persistentVolumeClaim:
+            claimName: radarr-config-pvc
+        - name: radarr-media
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: rtc
+          hostPath:
+            path: /dev/rtc
       securityContext:
         fsGroup: 797
 ---
@@ -104,13 +104,13 @@ spec:
     name: letsencrypt
   commonName: radarr.underyx.me
   dnsNames:
-  - radarr.underyx.me
+    - radarr.underyx.me
   acme:
     config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - radarr.underyx.me
+      - http01:
+          ingressClass: nginx
+        domains:
+          - radarr.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -119,14 +119,14 @@ metadata:
   namespace: media
 spec:
   rules:
-  - host: radarr.underyx.me
-    http:
-      paths:
-      - backend:
-          serviceName: radarr-svc
-          servicePort: 80
-        path: /
+    - host: radarr.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: radarr-svc
+              servicePort: 80
+            path: /
   tls:
-  - hosts:
-    - radarr.underyx.me
-    secretName: radarr-tls
+    - hosts:
+        - radarr.underyx.me
+      secretName: radarr-tls

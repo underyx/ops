@@ -8,7 +8,7 @@ metadata:
 spec:
   storageClassName: rook-ceph-block
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 20Gi
@@ -31,41 +31,41 @@ spec:
         app: plex
     spec:
       containers:
-      - name: app
-        image: wernight/plex-media-server:autoupdate
-        ports:
-        - containerPort: 32400
-        env:
-          - name: X_PLEX_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: plex-env
-                key: X_PLEX_TOKEN
-        volumeMounts:
-        - name: plex-data
-          mountPath: /config
-        - name: plex-media
-          mountPath: /media
-        - name: plex-transcoder
-          mountPath: /tmp/transcoder
-        livenessProbe:
-          tcpSocket:
-            port: 32400
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        - name: app
+          image: wernight/plex-media-server:autoupdate
+          ports:
+            - containerPort: 32400
+          env:
+            - name: X_PLEX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: plex-env
+                  key: X_PLEX_TOKEN
+          volumeMounts:
+            - name: plex-data
+              mountPath: /config
+            - name: plex-media
+              mountPath: /media
+            - name: plex-transcoder
+              mountPath: /tmp/transcoder
+          livenessProbe:
+            tcpSocket:
+              port: 32400
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
-      - name: plex-data
-        persistentVolumeClaim:
-          claimName: plex-data-pvc
-      - name: plex-transcoder
-        emptyDir: {}
-      - name: plex-media
-        flexVolume:
-          driver: ceph.rook.io/rook
-          fsType: ceph
-          options:
-            fsName: media-fs
-            clusterNamespace: rook-ceph
+        - name: plex-data
+          persistentVolumeClaim:
+            claimName: plex-data-pvc
+        - name: plex-transcoder
+          emptyDir: {}
+        - name: plex-media
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
       securityContext:
         fsGroup: 797
 ---
@@ -95,13 +95,13 @@ spec:
     name: letsencrypt
   commonName: plex.underyx.me
   dnsNames:
-  - plex.underyx.me
+    - plex.underyx.me
   acme:
     config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - plex.underyx.me
+      - http01:
+          ingressClass: nginx
+        domains:
+          - plex.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -110,14 +110,14 @@ metadata:
   namespace: media
 spec:
   rules:
-  - host: plex.underyx.me
-    http:
-      paths:
-      - backend:
-          serviceName: plex-svc
-          servicePort: 80
-        path: /
+    - host: plex.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: plex-svc
+              servicePort: 80
+            path: /
   tls:
-  - hosts:
-    - plex.underyx.me
-    secretName: plex-tls
+    - hosts:
+        - plex.underyx.me
+      secretName: plex-tls

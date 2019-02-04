@@ -9,7 +9,7 @@ metadata:
 spec:
   storageClassName: rook-ceph-block
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
@@ -32,49 +32,49 @@ spec:
         app: bazarr
     spec:
       containers:
-      - name: app
-        image: linuxserver/bazarr:amd64-b9a987b5-ls4
-        ports:
-        - containerPort: 6767
-        env:
-          - name: PUID
-            value: "797"
-          - name: PGID
-            value: "797"
-        volumeMounts:
-        - name: bazarr-config
-          mountPath: /config
-        - name: bazarr-media
-          mountPath: /media
-        - name: localtime
-          mountPath: /etc/localtime
-          readOnly: true
-        - name: rtc
-          mountPath: /dev/rtc
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 6767
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        - name: app
+          image: linuxserver/bazarr:11ff3b33-ls16
+          ports:
+            - containerPort: 6767
+          env:
+            - name: PUID
+              value: "797"
+            - name: PGID
+              value: "797"
+          volumeMounts:
+            - name: bazarr-config
+              mountPath: /config
+            - name: bazarr-media
+              mountPath: /media
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: rtc
+              mountPath: /dev/rtc
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 6767
+            initialDelaySeconds: 30
+            periodSeconds: 30
       volumes:
-      - name: bazarr-config
-        persistentVolumeClaim:
-          claimName: bazarr-config-pvc
-      - name: bazarr-media
-        flexVolume:
-          driver: ceph.rook.io/rook
-          fsType: ceph
-          options:
-            fsName: media-fs
-            clusterNamespace: rook-ceph
-      - name: localtime
-        hostPath:
-          path: /etc/localtime
-      - name: rtc
-        hostPath:
-          path: /dev/rtc
+        - name: bazarr-config
+          persistentVolumeClaim:
+            claimName: bazarr-config-pvc
+        - name: bazarr-media
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: rtc
+          hostPath:
+            path: /dev/rtc
       securityContext:
         fsGroup: 797
 ---
@@ -104,13 +104,13 @@ spec:
     name: letsencrypt
   commonName: bazarr.underyx.me
   dnsNames:
-  - bazarr.underyx.me
+    - bazarr.underyx.me
   acme:
     config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - bazarr.underyx.me
+      - http01:
+          ingressClass: nginx
+        domains:
+          - bazarr.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -119,14 +119,14 @@ metadata:
   namespace: media
 spec:
   rules:
-  - host: bazarr.underyx.me
-    http:
-      paths:
-      - backend:
-          serviceName: bazarr-svc
-          servicePort: 80
-        path: /
+    - host: bazarr.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: bazarr-svc
+              servicePort: 80
+            path: /
   tls:
-  - hosts:
-    - bazarr.underyx.me
-    secretName: bazarr-tls
+    - hosts:
+        - bazarr.underyx.me
+      secretName: bazarr-tls
