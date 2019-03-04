@@ -1,0 +1,89 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: lastfm-thing
+  namespace: public
+  labels:
+    app: lastfm-thing
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lastfm-thing
+  template:
+    metadata:
+      labels:
+        app: lastfm-thing
+    spec:
+      containers:
+        - name: app
+          image: registry.gitlab.com/underyx/lastfm-thing:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LASTFM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-thing-env
+                  key: LASTFM_API_KEY
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /sample
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lastfm-thing-svc
+  namespace: public
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: lastfm-thing
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: lastfm-thing-cert
+  namespace: public
+  labels:
+    app: lastfm-thing
+spec:
+  secretName: lastfm-thing-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: lastfm-thing.underyx.me
+  dnsNames:
+    - lastfm-thing.underyx.me
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - lastfm-thing.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lastfm-thing-ingress
+  namespace: public
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+spec:
+  rules:
+    - host: lastfm-thing.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: lastfm-thing-svc
+              servicePort: 8080
+            path: /
+  tls:
+    - hosts:
+        - lastfm-thing.underyx.me
+      secretName: lastfm-thing-tls
