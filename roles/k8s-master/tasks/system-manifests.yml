@@ -4,21 +4,6 @@
 - name: apply flannel
   command: kubectl apply -f /tmp/manifests/system/flannel
 
-- name: install helm
-  shell: curl https://raw.githubusercontent.com/helm/helm/v2.11.0/scripts/get | bash
-  args:
-    warn: no
-
-- name: apply helm tiller role
-  command: kubectl apply -f /tmp/manifests/system/helm-tiller/role.yml
-
-- name: install helm tiller
-  command: helm init --service-account tiller
-
-- name: install cert-manager
-  command: helm install --name cert-manager --namespace kube-system stable/cert-manager
-  ignore_errors: yes  # fails on re-run
-
 - name: apply cert-manager config
   command: kubectl apply -f /tmp/manifests/system/cert-manager
 
