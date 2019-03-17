@@ -33,6 +33,13 @@ spec:
       labels:
         app: bazarr
     spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/media"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
       containers:
         - name: app
           image: linuxserver/bazarr:11ff3b33-ls16
@@ -64,6 +71,14 @@ spec:
         - name: bazarr-config
           persistentVolumeClaim:
             claimName: bazarr-config-pvc
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
         - name: bazarr-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -71,6 +86,7 @@ spec:
             options:
               fsName: media-fs
               clusterNamespace: rook-ceph
+              path: /media
         - name: localtime
           hostPath:
             path: /etc/localtime

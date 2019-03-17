@@ -33,6 +33,13 @@ spec:
       labels:
         app: radarr
     spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/media"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
       containers:
         - name: app
           image: linuxserver/radarr:v0.2.0.1293-ls1
@@ -64,6 +71,14 @@ spec:
         - name: radarr-config
           persistentVolumeClaim:
             claimName: radarr-config-pvc
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
         - name: radarr-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -71,6 +86,7 @@ spec:
             options:
               fsName: media-fs
               clusterNamespace: rook-ceph
+              path: /media
         - name: localtime
           hostPath:
             path: /etc/localtime

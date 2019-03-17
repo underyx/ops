@@ -33,6 +33,13 @@ spec:
       labels:
         app: deluge
     spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/media"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
       containers:
         - name: app
           image: linuxserver/deluge:4ad4347d-ls7
@@ -86,6 +93,14 @@ spec:
         - name: deluge-config
           persistentVolumeClaim:
             claimName: deluge-config-pvc
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
         - name: deluge-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -93,6 +108,7 @@ spec:
             options:
               fsName: media-fs
               clusterNamespace: rook-ceph
+              path: /media
         - name: localtime
           hostPath:
             path: /etc/localtime

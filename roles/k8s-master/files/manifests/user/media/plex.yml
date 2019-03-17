@@ -32,6 +32,13 @@ spec:
       labels:
         app: plex
     spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/media"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
       containers:
         - name: app
           image: wernight/plex-media-server:autoupdate
@@ -61,6 +68,14 @@ spec:
             claimName: plex-data-pvc
         - name: plex-transcoder
           emptyDir: {}
+          - name: fs-root
+            flexVolume:
+              driver: ceph.rook.io/rook
+              fsType: ceph
+              options:
+                fsName: media-fs
+                clusterNamespace: rook-ceph
+                path: /
         - name: plex-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -68,6 +83,7 @@ spec:
             options:
               fsName: media-fs
               clusterNamespace: rook-ceph
+              path: /media
       securityContext:
         fsGroup: 797
 ---
