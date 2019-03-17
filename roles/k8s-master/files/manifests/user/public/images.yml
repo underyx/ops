@@ -1,0 +1,220 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: images-sftp-config-pvc
+  namespace: public
+  labels:
+    app: images
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: images-sftp-authorized-keys
+  namespace: public
+data:
+  monosnap: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDNmV2+ahvVrnOD3uhyQ3ujdEFLmSthwBQxRX4BHtLfeDAQmQAnS+eELM1dw4TB8/NnOEHU8CbX7aOz/hKUHlvFpII3f+Q7C7lUcwT9AHr9ptfYy1w+Qus6Mh/i1alJrn7wwmRIdTjRDoedCs0vgGJ6OrbK9w76nAisBigRbB16TilP4cmIQHFuJfYCKEy3iAxKiwg3xzyFwoD/BYr5JGDL7HnxyxcLSb8F0h0H4aICUHGIbLWozTK14D0InbX7T1RlEnxmLLFZYe5f3YQivfQqMMbWl+y4nuTZu9IjKARnndSNzvKxmySWy+ivrpYmLRoEwgfo1QWTYLEx8pK/zRhJ monosnap@unicorn.underyx.me"
+  sharex: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDM21u4nd6QRjztY9ukEQCrFMX/3tCfwE07l+C6wRl1r9NjOehjD4QiGBpFn/OMhwQ4AhOd9efbluuV9a1a9OcZxVU22f/YN4YXYaPR49QIeusXtLDGJSmwvU9TtyBMOvzeGW5oUj5IirW531rCSd5fRfCXypiSBDE3SAby6BjZXIXokLcIHzBozwkpBqs7DoKIwWHV6B50HhI9RDOnyPTsZhYzjbxBkrq24/Gz4lELk7Shx7XWeszXnU734M6BuXDMKLlwWq+l8ec/h2l14NKOxjZ6tVUwGdtaMHePZD3Q2ev1NP5kb0BXsZleIX6yuLX9+BB7T1nN8MG12MqIho4b sharex@unicorn.underyx.me"
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: images-sftp
+  namespace: public
+  labels:
+    app: images-sftp
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: images-sftp
+  template:
+    metadata:
+      labels:
+        app: images-sftp
+    spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/images"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
+        - name: set-up-authorized-keys
+          image: busybox:1
+          command: ["/bin/sh"]
+          args: ["-c", "cp /tmp/authorized-keys-source/* /tmp/authorized-keys"]
+          volumeMounts:
+            - name: authorized-keys-source
+              mountPath: /tmp/authorized-keys-source
+              readOnly: yes
+            - name: authorized-keys
+              mountPath: /tmp/authorized-keys
+      containers:
+        - name: app
+          image: panubo/sshd
+          env:
+            - name: SSH_USERS
+              value: monosnap:667:667,sharex:749:749 # keypad codes for MNS, SHX
+            - name: SFTP_MODE
+              value: "true"
+          ports:
+            - containerPort: 22
+          volumeMounts:
+            - name: images
+              mountPath: /data/i.underyx.me
+            - name: config
+              mountPath: /etc/ssh
+            - name: authorized-keys
+              mountPath: /etc/authorized_keys
+          lifecycle:
+            postStart:
+              exec:
+                command: ["chmod", "0777", "/data/i.underyx.me"]
+          livenessProbe:
+            tcpSocket:
+              port: 22
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
+        - name: images
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /images
+        - name: config
+          persistentVolumeClaim:
+            claimName: images-sftp-config-pvc
+        - name: authorized-keys-source
+          configMap:
+            name: images-sftp-authorized-keys
+        - name: authorized-keys
+          emptyDir: {}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: images-sftp-svc
+  namespace: public
+spec:
+  ports:
+    - port: 22
+      targetPort: 22
+      nodePort: 30464 # keypad code for 30IUM - i.underyx.me
+  type: NodePort
+  selector:
+    app: images-sftp
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: images-web
+  namespace: public
+  labels:
+    app: images-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: images-web
+  template:
+    metadata:
+      labels:
+        app: images-web
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.15-alpine
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: images
+              mountPath: /usr/share/nginx/html
+              readOnly: yes
+      volumes:
+        - name: images
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /images
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: images-web-svc
+  namespace: public
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: images-web
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: images-web-cert
+  namespace: public
+  labels:
+    app: images
+spec:
+  secretName: images-web-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: i.underyx.me
+  dnsNames:
+    - i.underyx.me
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - i.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: images-web-ingress
+  namespace: public
+spec:
+  rules:
+    - host: i.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: images-web-svc
+              servicePort: 80
+            path: /
+  tls:
+    - hosts:
+        - underyx.me
+      secretName: images-web-tls
