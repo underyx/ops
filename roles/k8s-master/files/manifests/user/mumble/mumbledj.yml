@@ -7,6 +7,8 @@ metadata:
     app: mumbledj
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mumbledj
@@ -16,18 +18,18 @@ spec:
         app: mumbledj
     spec:
       containers:
-      - name: app
-        command: ["/bin/mumbledj", "--config", "/etc/mumbledj/mumbledj.yaml"]
-        image: underyx/mumbledj
-        volumeMounts:
-        - name: mumbledj-cache
-          mountPath: /root/.cache
-        - name: mumbledj-config
-          mountPath: /etc/mumbledj
-          readOnly: true
+        - name: app
+          command: ["/bin/mumbledj", "--config", "/etc/mumbledj/mumbledj.yaml"]
+          image: underyx/mumbledj
+          volumeMounts:
+            - name: mumbledj-cache
+              mountPath: /root/.cache
+            - name: mumbledj-config
+              mountPath: /etc/mumbledj
+              readOnly: true
       volumes:
-      - name: mumbledj-cache
-        emptyDir: {}
-      - name: mumbledj-config
-        secret:
-          secretName: mumbledj-config
+        - name: mumbledj-cache
+          emptyDir: {}
+        - name: mumbledj-config
+          secret:
+            secretName: mumbledj-config

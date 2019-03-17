@@ -23,6 +23,8 @@ metadata:
     app: jackett
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: jackett
