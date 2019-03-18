@@ -1,0 +1,80 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: mici-hu
+  namespace: public
+  labels:
+    app: mici.hu
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mici.hu
+  template:
+    metadata:
+      labels:
+        app: mici.hu
+    spec:
+      containers:
+        - name: app
+          image: underyx/mici.hu
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mici-hu-svc
+  namespace: public
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: mici.hu
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: mici-hu-cert
+  namespace: public
+  labels:
+    app: mici.hu
+spec:
+  secretName: mici-hu-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: macko.mici.hu
+  dnsNames:
+    - macko.mici.hu
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - macko.mici.hu
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: mici-hu-ingress
+  namespace: public
+spec:
+  rules:
+    - host: macko.mici.hu
+      http:
+        paths:
+          - backend:
+              serviceName: mici-hu-svc
+              servicePort: 80
+            path: /
+  tls:
+    - hosts:
+        - macko.mici.hu
+      secretName: mici-hu-tls
