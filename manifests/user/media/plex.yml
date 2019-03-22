@@ -41,41 +41,73 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: wernight/plex-media-server:autoupdate
+          image: plexinc/pms-docker:public
           ports:
+            - containerPort: 3005
+              hostPort: 3005
+            - containerPort: 8324
+              hostPort: 8324
             - containerPort: 32400
+              hostPort: 32400
+            - containerPort: 32469
+              hostPort: 32469
+            - containerPort: 1900
+              hostPort: 1900
+              protocol: UDP
+            - containerPort: 32410
+              hostPort: 32410
+              protocol: UDP
+            - containerPort: 32412
+              hostPort: 32412
+              protocol: UDP
+            - containerPort: 32413
+              hostPort: 32413
+              protocol: UDP
+            - containerPort: 32414
+              hostPort: 32414
+              protocol: UDP
           env:
-            - name: X_PLEX_TOKEN
+            - name: TZ
+              value: Europe/Prague
+            - name: PLEX_UID
+              value: "797"
+            - name: PLEX_GID
+              value: "797"
+            - name: PLEX_CLAIM
               valueFrom:
                 secretKeyRef:
                   name: plex-env
-                  key: X_PLEX_TOKEN
+                  key: PLEX_CLAIM
+            - name: ADVERTISE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
           volumeMounts:
-            - name: plex-data
+            - name: plex-config
               mountPath: /config
             - name: plex-media
               mountPath: /media
-            - name: plex-transcoder
-              mountPath: /tmp/transcoder
+            - name: plex-transcode
+              mountPath: /transcode
           livenessProbe:
             tcpSocket:
               port: 32400
             initialDelaySeconds: 30
             periodSeconds: 30
       volumes:
-        - name: plex-data
+        - name: plex-config
           persistentVolumeClaim:
             claimName: plex-data-pvc
-        - name: plex-transcoder
+        - name: plex-transcode
           emptyDir: {}
-          - name: fs-root
-            flexVolume:
-              driver: ceph.rook.io/rook
-              fsType: ceph
-              options:
-                fsName: media-fs
-                clusterNamespace: rook-ceph
-                path: /
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
         - name: plex-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -93,11 +125,41 @@ metadata:
   name: plex-svc
   namespace: media
 spec:
-  ports:
-    - port: 80
-      targetPort: 32400
   selector:
     app: plex
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 32400
+    - name: "3005"
+      port: 3005
+      targetPort: 3005
+    - name: "8324"
+      port: 8324
+      targetPort: 8324
+    - name: "32469"
+      port: 32469
+      targetPort: 32469
+    - name: "1900"
+      port: 1900
+      targetPort: 1900
+      protocol: UDP
+    - name: "32410"
+      port: 32410
+      targetPort: 32410
+      protocol: UDP
+    - name: "32412"
+      port: 32412
+      targetPort: 32412
+      protocol: UDP
+    - name: "32413"
+      port: 32413
+      targetPort: 32413
+      protocol: UDP
+    - name: "32414"
+      port: 32414
+      targetPort: 32414
+      protocol: UDP
 ---
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
