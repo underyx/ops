@@ -118,6 +118,13 @@
     port: "32412:32414"
     comment: Plex
 
+- name: allow IRC
+  ufw:
+    rule: allow
+    proto: tcp
+    port: "6697"
+    comment: IRC
+
 - name: enable ufw
   ufw:
     state: enabled
