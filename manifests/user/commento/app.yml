@@ -1,0 +1,92 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: commento
+  namespace: commento
+  labels:
+    app: commento
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: commento
+  template:
+    metadata:
+      labels:
+        app: commento
+    spec:
+      containers:
+      - name: app
+        image: registry.gitlab.com/commento/commento:v1.6.2
+        env:
+          - name: COMMENTO_ORIGIN
+            value: https://commento.underyx.me
+          - name: COMMENTO_POSTGRES
+            value: postgres://postgres:postgres@db-svc:5432/postgres?sslmode=disable
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: commento-svc
+  namespace: commento
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: commento
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: commento-cert
+  namespace: commento
+  labels:
+    app: commento
+spec:
+  secretName: commento-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  commonName: commento.underyx.me
+  dnsNames:
+  - commento.underyx.me
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - commento.underyx.me
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: commento-ingress
+  namespace: commento
+spec:
+  rules:
+  - host: commento.underyx.me
+    http:
+      paths:
+      - backend:
+          serviceName: commento-svc
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - commento.underyx.me
+    secretName: commento-tls
