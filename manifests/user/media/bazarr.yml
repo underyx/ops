@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/bazarr:11ff3b33-ls16
+          image: linuxserver/bazarr:c61b467e-ls28
           ports:
             - containerPort: 6767
           env:

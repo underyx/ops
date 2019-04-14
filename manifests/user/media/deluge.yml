@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/deluge:4ad4347d-ls7
+          image: linuxserver/deluge:36ed55be-ls17
           ports:
             - containerPort: 8112
             - containerPort: 45401

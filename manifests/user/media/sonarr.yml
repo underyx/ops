@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/sonarr:2.0.0.5302-ls4
+          image: linuxserver/sonarr:2.0.0.5321-ls52
           ports:
             - containerPort: 8989
           env:
