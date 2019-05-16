@@ -23,6 +23,8 @@ metadata:
     app: sonarr
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: sonarr
@@ -31,9 +33,16 @@ spec:
       labels:
         app: sonarr
     spec:
+      initContainers:
+        - name: set-up-filesystem-mount
+          image: busybox:1
+          command: ["mkdir", "-p", "/fs/media"]
+          volumeMounts:
+            - name: fs-root
+              mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/sonarr:3.0.1.441-ls51
+          image: linuxserver/sonarr:3.0.1.497-ls74
           ports:
             - containerPort: 8989
           env:
@@ -58,10 +67,25 @@ spec:
               port: 8989
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 256Mi
       volumes:
         - name: sonarr-config
           persistentVolumeClaim:
             claimName: sonarr-config-pvc
+        - name: fs-root
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: media-fs
+              clusterNamespace: rook-ceph
+              path: /
         - name: sonarr-media
           flexVolume:
             driver: ceph.rook.io/rook
@@ -69,6 +93,7 @@ spec:
             options:
               fsName: media-fs
               clusterNamespace: rook-ceph
+              path: /media
         - name: localtime
           hostPath:
             path: /etc/localtime

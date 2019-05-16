@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/deluge:36ed55be-ls17
+          image: linuxserver/deluge:78da80ca-ls20
           ports:
             - containerPort: 8112
             - containerPort: 45401
@@ -89,6 +89,13 @@ spec:
               port: 8112
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 512Mi
       volumes:
         - name: deluge-config
           persistentVolumeClaim:

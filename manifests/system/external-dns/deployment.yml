@@ -29,3 +29,10 @@ spec:
             secretKeyRef:
               name: cloudflare-api-key
               key: key
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64Mi
+          requests:
+            cpu: 10m
+            memory: 16Mi

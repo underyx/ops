@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/radarr:0.2.0.1331-ls11
+          image: linuxserver/radarr:0.2.0.1349-ls1
           ports:
             - containerPort: 7878
           env:
@@ -67,6 +67,13 @@ spec:
               port: 7878
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 256Mi
       volumes:
         - name: radarr-config
           persistentVolumeClaim:

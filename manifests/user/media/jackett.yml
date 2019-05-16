@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/jackett:v0.11.223-ls6
+          image: linuxserver/jackett:v0.11.341-ls10
           ports:
             - containerPort: 9117
           env:
@@ -55,6 +55,13 @@ spec:
               port: 9117
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 256Mi
       volumes:
         - name: jackett-config
           persistentVolumeClaim:

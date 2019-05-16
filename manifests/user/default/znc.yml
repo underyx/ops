@@ -46,6 +46,13 @@ spec:
               port: 6697
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+            requests:
+              cpu: 20m
+              memory: 4Mi
       volumes:
         - name: znc-config
           persistentVolumeClaim:

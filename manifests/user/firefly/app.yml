@@ -75,11 +75,11 @@ spec:
                 key: FF_APP_KEY
         resources:
           limits:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 200m
+            memory: 512Mi
           requests:
             cpu: 10m
-            memory: 32Mi
+            memory: 128Mi
         volumeMounts:
           - mountPath: /var/www/firefly-iii/storage/export
             name: firefly-export

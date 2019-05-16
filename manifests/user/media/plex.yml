@@ -94,6 +94,13 @@ spec:
               port: 32400
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 4000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
       volumes:
         - name: plex-config
           persistentVolumeClaim:

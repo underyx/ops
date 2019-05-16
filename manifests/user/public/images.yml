@@ -85,6 +85,13 @@ spec:
               port: 22
             initialDelaySeconds: 30
             periodSeconds: 30
+          resources:
+            limits:
+              cpu: 10m
+              memory: 4Mi
+            requests:
+              cpu: 5m
+              memory: 1Mi
       volumes:
         - name: fs-root
           flexVolume:
@@ -156,6 +163,13 @@ spec:
             - name: images
               mountPath: /usr/share/nginx/html
               readOnly: yes
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+            requests:
+              cpu: 10m
+              memory: 2Mi
       volumes:
         - name: images
           flexVolume:

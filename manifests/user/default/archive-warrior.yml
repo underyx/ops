@@ -25,3 +25,10 @@ spec:
             value: auto
           - name: CONCURRENT_ITEMS
             value: "8"
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
