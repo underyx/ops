@@ -31,10 +31,18 @@
     regexp: '^KUBELET_EXTRA_ARGS='
     line: 'KUBELET_EXTRA_ARGS=--read-only-port=10255'
 
-- name: set bridge-nf-call-iptables
+- name: set bridge-nf-call-iptables  # flannel docs asked for this maybe?
   sysctl:
     name: net.bridge.bridge-nf-call-iptables
     value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: set inotify.max_user_watches  # https://github.com/rook/rook/issues/2568#issuecomment-464522993
+  sysctl:
+    name: fs.inotify.max_user_watches
+    value: 524288
     sysctl_set: yes
     state: present
     reload: yes
