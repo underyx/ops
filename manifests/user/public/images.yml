@@ -61,7 +61,7 @@ spec:
               mountPath: /tmp/authorized-keys
       containers:
         - name: app
-          image: panubo/sshd
+          image: panubo/sshd:1.0.2
           env:
             - name: SSH_USERS
               value: monosnap:667:667,sharex:749:749 # keypad codes for MNS, SHX
@@ -87,11 +87,11 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 10m
-              memory: 4Mi
+              cpu: 1000m
+              memory: 512Mi
             requests:
-              cpu: 5m
-              memory: 1Mi
+              cpu: 10m
+              memory: 8Mi
       volumes:
         - name: fs-root
           flexVolume:
