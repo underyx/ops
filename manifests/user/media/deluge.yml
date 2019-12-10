@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/deluge:78da80ca-ls20
+          image: linuxserver/deluge:2.0.3-2201906121747ubuntu18.04.1-ls47
           ports:
             - containerPort: 8112
             - containerPort: 45401
@@ -135,7 +135,7 @@ spec:
   selector:
     app: deluge
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: deluge-cert
@@ -150,12 +150,6 @@ spec:
   commonName: deluge.underyx.me
   dnsNames:
     - deluge.underyx.me
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx
-        domains:
-          - deluge.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

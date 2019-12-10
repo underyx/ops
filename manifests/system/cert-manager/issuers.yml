@@ -1,4 +1,4 @@
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
@@ -8,9 +8,12 @@ spec:
     email: bence@underyx.me
     privateKeySecretRef:
       name: letsencrypt-staging-private-key
-    http01: {}
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt
@@ -20,4 +23,7 @@ spec:
     email: bence@underyx.me
     privateKeySecretRef:
       name: letsencrypt-private-key
-    http01: {}
+    solvers:
+    - http01:
+        ingress:
+          class: nginx

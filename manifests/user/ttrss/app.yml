@@ -77,7 +77,7 @@ spec:
   selector:
     app: ttrss
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: ttrss-cert
@@ -92,12 +92,6 @@ spec:
   commonName: feeds.underyx.me
   dnsNames:
   - feeds.underyx.me
-  acme:
-    config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - feeds.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

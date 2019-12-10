@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: mattikus/murmur:v1.2.19
+          image: mattikus/murmur:v1.3.0
           command:
             [
               "/opt/murmur/murmur.x86",

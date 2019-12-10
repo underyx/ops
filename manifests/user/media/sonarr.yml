@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/sonarr:3.0.1.497-ls74
+          image: linuxserver/sonarr:3.0.3.664-ls157
           ports:
             - containerPort: 8989
           env:
@@ -115,7 +115,7 @@ spec:
   selector:
     app: sonarr
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: sonarr-cert
@@ -130,12 +130,6 @@ spec:
   commonName: sonarr.underyx.me
   dnsNames:
     - sonarr.underyx.me
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx
-        domains:
-          - sonarr.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

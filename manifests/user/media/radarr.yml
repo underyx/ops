@@ -42,7 +42,7 @@ spec:
               mountPath: /fs
       containers:
         - name: app
-          image: linuxserver/radarr:0.2.0.1349-ls1
+          image: linuxserver/radarr:3.0.0.2282-ls37
           ports:
             - containerPort: 7878
           env:
@@ -115,7 +115,7 @@ spec:
   selector:
     app: radarr
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: radarr-cert
@@ -130,12 +130,6 @@ spec:
   commonName: radarr.underyx.me
   dnsNames:
     - radarr.underyx.me
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx
-        domains:
-          - radarr.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

@@ -61,7 +61,7 @@ spec:
               mountPath: /tmp/authorized-keys
       containers:
         - name: app
-          image: panubo/sshd:1.0.2
+          image: panubo/sshd:1.1.0
           env:
             - name: SSH_USERS
               value: monosnap:667:667,sharex:749:749 # keypad codes for MNS, SHX
@@ -192,7 +192,7 @@ spec:
   selector:
     app: images-web
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: images-web-cert
@@ -207,12 +207,6 @@ spec:
   commonName: i.underyx.me
   dnsNames:
     - i.underyx.me
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx
-        domains:
-          - i.underyx.me
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
