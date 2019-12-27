@@ -1,0 +1,28 @@
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: rook-ceph
+  namespace: rook-ceph
+spec:
+  cephVersion:
+    image: ceph/ceph:v14.2.5-20191210
+    allowUnsupported: false
+  dataDirHostPath: /var/lib/rook
+  mon:
+    count: 3
+    allowMultiplePerNode: true
+  dashboard:
+    enabled: true
+    ssl: true
+  network:
+    hostNetwork: false
+  rbdMirroring:
+    workers: 0
+  resources:
+  storage: # cluster level storage configuration and selection
+    useAllNodes: true
+    useAllDevices: false
+    directories:
+      - path: /rook/storage-dir
+    config:
+      osdsPerDevice: "1" # this value can be overridden at the node or device level

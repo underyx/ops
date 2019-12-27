@@ -1,4 +1,3 @@
----
 kind: Service
 apiVersion: v1
 metadata:
@@ -11,27 +10,13 @@ spec:
   selector:
     app: plex
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: plex-tools-cert
-  namespace: media
-  labels:
-    app: plex
-spec:
-  secretName: plex-tools-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: plex-tools.underyx.me
-  dnsNames:
-    - plex-tools.underyx.me
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: plex-tools-ingress
   namespace: media
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: plex-tools.underyx.me

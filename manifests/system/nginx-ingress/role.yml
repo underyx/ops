@@ -64,7 +64,6 @@ rules:
       - ingresses/status
     verbs:
       - update
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -109,7 +108,6 @@ rules:
       - endpoints
     verbs:
       - get
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding

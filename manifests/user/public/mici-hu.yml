@@ -1,5 +1,5 @@
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: mici-hu
   namespace: public
@@ -45,27 +45,13 @@ spec:
   selector:
     app: mici.hu
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: mici-hu-cert
-  namespace: public
-  labels:
-    app: mici.hu
-spec:
-  secretName: mici-hu-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: macko.mici.hu
-  dnsNames:
-    - macko.mici.hu
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: mici-hu-ingress
   namespace: public
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: macko.mici.hu

@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: images-pvc
+  namespace: public
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: csi-cephfs
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,7 +36,7 @@ data:
   sharex: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDM21u4nd6QRjztY9ukEQCrFMX/3tCfwE07l+C6wRl1r9NjOehjD4QiGBpFn/OMhwQ4AhOd9efbluuV9a1a9OcZxVU22f/YN4YXYaPR49QIeusXtLDGJSmwvU9TtyBMOvzeGW5oUj5IirW531rCSd5fRfCXypiSBDE3SAby6BjZXIXokLcIHzBozwkpBqs7DoKIwWHV6B50HhI9RDOnyPTsZhYzjbxBkrq24/Gz4lELk7Shx7XWeszXnU734M6BuXDMKLlwWq+l8ec/h2l14NKOxjZ6tVUwGdtaMHePZD3Q2ev1NP5kb0BXsZleIX6yuLX9+BB7T1nN8MG12MqIho4b sharex@unicorn.underyx.me"
 ---
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: images-sftp
   namespace: public
@@ -43,12 +55,6 @@ spec:
         app: images-sftp
     spec:
       initContainers:
-        - name: set-up-filesystem-mount
-          image: busybox:1
-          command: ["mkdir", "-p", "/fs/images"]
-          volumeMounts:
-            - name: fs-root
-              mountPath: /fs
         - name: set-up-authorized-keys
           image: busybox:1
           command: ["/bin/sh"]
@@ -93,22 +99,9 @@ spec:
               cpu: 10m
               memory: 8Mi
       volumes:
-        - name: fs-root
-          flexVolume:
-            driver: ceph.rook.io/rook
-            fsType: ceph
-            options:
-              fsName: media-fs
-              clusterNamespace: rook-ceph
-              path: /
         - name: images
-          flexVolume:
-            driver: ceph.rook.io/rook
-            fsType: ceph
-            options:
-              fsName: media-fs
-              clusterNamespace: rook-ceph
-              path: /images
+          persistentVolumeClaim:
+            claimName: images-pvc
         - name: config
           persistentVolumeClaim:
             claimName: images-sftp-config-pvc
@@ -133,7 +126,7 @@ spec:
     app: images-sftp
 ---
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: images-web
   namespace: public
@@ -165,20 +158,15 @@ spec:
               readOnly: yes
           resources:
             limits:
-              cpu: 50m
-              memory: 32Mi
+              cpu: 1000m
+              memory: 64Mi
             requests:
               cpu: 10m
               memory: 2Mi
       volumes:
         - name: images
-          flexVolume:
-            driver: ceph.rook.io/rook
-            fsType: ceph
-            options:
-              fsName: media-fs
-              clusterNamespace: rook-ceph
-              path: /images
+          persistentVolumeClaim:
+            claimName: images-pvc
 ---
 kind: Service
 apiVersion: v1
@@ -192,27 +180,13 @@ spec:
   selector:
     app: images-web
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: images-web-cert
-  namespace: public
-  labels:
-    app: images
-spec:
-  secretName: images-web-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: i.underyx.me
-  dnsNames:
-    - i.underyx.me
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: images-web-ingress
   namespace: public
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: i.underyx.me
@@ -224,5 +198,5 @@ spec:
             path: /
   tls:
     - hosts:
-        - underyx.me
+        - i.underyx.me
       secretName: images-web-tls

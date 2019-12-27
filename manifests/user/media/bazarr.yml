@@ -15,7 +15,7 @@ spec:
       storage: 1Gi
 ---
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: bazarr
   namespace: media
@@ -33,13 +33,6 @@ spec:
       labels:
         app: bazarr
     spec:
-      initContainers:
-        - name: set-up-filesystem-mount
-          image: busybox:1
-          command: ["mkdir", "-p", "/fs/media"]
-          volumeMounts:
-            - name: fs-root
-              mountPath: /fs
       containers:
         - name: app
           image: linuxserver/bazarr:74079bc4-ls63
@@ -78,22 +71,9 @@ spec:
         - name: bazarr-config
           persistentVolumeClaim:
             claimName: bazarr-config-pvc
-        - name: fs-root
-          flexVolume:
-            driver: ceph.rook.io/rook
-            fsType: ceph
-            options:
-              fsName: media-fs
-              clusterNamespace: rook-ceph
-              path: /
         - name: bazarr-media
-          flexVolume:
-            driver: ceph.rook.io/rook
-            fsType: ceph
-            options:
-              fsName: media-fs
-              clusterNamespace: rook-ceph
-              path: /media
+          persistentVolumeClaim:
+            claimName: media-pvc
         - name: localtime
           hostPath:
             path: /etc/localtime
@@ -115,27 +95,13 @@ spec:
   selector:
     app: bazarr
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: bazarr-cert
-  namespace: media
-  labels:
-    app: bazarr
-spec:
-  secretName: bazarr-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: bazarr.underyx.me
-  dnsNames:
-    - bazarr.underyx.me
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: bazarr-ingress
   namespace: media
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: bazarr.underyx.me

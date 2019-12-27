@@ -1,5 +1,5 @@
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: files-underyx-me
   namespace: public
@@ -45,27 +45,13 @@ spec:
   selector:
     app: files.underyx.me
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: files-underyx-me-cert
-  namespace: public
-  labels:
-    app: files.underyx.me
-spec:
-  secretName: files-underyx-me-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: files.underyx.me
-  dnsNames:
-    - files.underyx.me
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: files-underyx-me-ingress
   namespace: public
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: files.underyx.me

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: znc-config-pvc
-  namespace: default
+  namespace: znc
   labels:
     app: znc
 spec:
@@ -14,10 +14,10 @@ spec:
       storage: 5Gi
 ---
 kind: Deployment
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 metadata:
   name: znc
-  namespace: default
+  namespace: znc
   labels:
     app: znc
 spec:
@@ -62,7 +62,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: znc-svc
-  namespace: default
+  namespace: znc
 spec:
   ports:
     - name: http
@@ -74,27 +74,13 @@ spec:
   selector:
     app: znc
 ---
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: znc-cert
-  namespace: default
-  labels:
-    app: znc
-spec:
-  secretName: znc-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  commonName: znc.underyx.me
-  dnsNames:
-    - znc.underyx.me
----
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: znc-ingress
-  namespace: default
+  namespace: znc
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: znc.underyx.me
