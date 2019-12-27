@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: outline
+  name: shadowbox-server
+  labels:
+    app: shadowbox-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: shadowbox-server
+  template:
+    metadata:
+      labels:
+        app: shadowbox-server
+    spec:
+      containers:
+      - name: shadowbox
+        image: quay.io/outline/shadowbox:daily-2019-12-27
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - >
+                  echo '{"rollouts":[{"id":"single-port","enabled":true}],"portForNewAccessKeys":54634}' > /root/shadowbox/persisted-state/shadowbox_server_config.json;
+                  ln -sf /opt/outline/shadowbox_config.json /root/shadowbox/persisted-state/shadowbox_config.json;
+                  ln -sf /opt/outline/outline-ss-server/config.yml /root/shadowbox/persisted-state/outline-ss-server/config.yml;
+                  sleep 10;
+                  reload_command='kill -SIGHUP $(pgrep -f outline-ss-server)';
+                  echo "*/5 * * * * $reload_command" > reload.cron;
+                  crontab reload.cron;
+                  rm reload.cron;
+        env:
+        - name: SB_CERTIFICATE_FILE
+          value: "/tmp/shadowbox-selfsigned-dev.crt"
+        - name: SB_PRIVATE_KEY_FILE
+          value: "/tmp/shadowbox-selfsigned-dev.key"
+        - name: SB_PUBLIC_IP
+          value: "144.76.111.239"
+        volumeMounts:
+        - name: shadowbox-config
+          mountPath: /opt/outline
+          readOnly: true
+        - name: server-config-volume
+          mountPath: /cache
+        - name: tls
+          mountPath: /tmp/shadowbox-selfsigned-dev.crt
+          subPath: shadowbox-selfsigned-dev.crt
+        - name: tls
+          mountPath: /tmp/shadowbox-selfsigned-dev.key
+          subPath: shadowbox-selfsigned-dev.key
+        ports:
+        - containerPort: 54634
+          hostPort: 54634
+        - containerPort: 54634
+          hostPort: 54634
+          protocol: UDP
+      volumes:
+      - name: server-config-volume
+        emptyDir: {}
+      - name: shadowbox-config
+        persistentVolumeClaim:
+          claimName: outline-pvc
+      - name: tls
+        secret:
+          secretName: shadowbox-tls
+          items:
+          - key: tls.crt
+            path: shadowbox-selfsigned-dev.crt
+          - key: tls.key
+            path: shadowbox-selfsigned-dev.key
