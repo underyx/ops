@@ -1,0 +1,96 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: miniflux
+  namespace: miniflux
+  labels:
+    app: miniflux
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: miniflux
+  template:
+    metadata:
+      labels:
+        app: miniflux
+    spec:
+      containers:
+        - name: app
+          image: miniflux/miniflux:2.0.19
+          ports:
+            - containerPort: 80
+          env:
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: miniflux.miniflux-db.credentials
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: miniflux.miniflux-db.credentials
+                  key: password
+            - name: DATABASE_URL
+              value: "postgres://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@miniflux-db/miniflux?sslmode=require"
+            - name: RUN_MIGRATIONS
+              value: "1"
+            - name: CREATE_ADMIN
+              value: "1"
+            - name: BASE_URL
+              value: "https://news.underyx.me/"
+            - name: HTTPS
+              value: "1"
+            - name: ADMIN_USERNAME
+              value: underyx
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: miniflux-env
+                  key: ADMIN_PASSWORD
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: miniflux-svc
+  namespace: miniflux
+spec:
+  selector:
+    app: miniflux
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: miniflux-ingress
+  namespace: miniflux
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+    - host: news.underyx.me
+      http:
+        paths:
+          - backend:
+              serviceName: miniflux-svc
+              servicePort: 8080
+            path: /
+  tls:
+    - hosts:
+        - news.underyx.me
+      secretName: miniflux-tls
