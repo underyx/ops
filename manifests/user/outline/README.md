@@ -18,5 +18,5 @@ export SHA=$(openssl x509 -noout -fingerprint \
     -sha256 -inform pem -in ${SB_CERTIFICATE_FILE} \
     | sed "s/://g" | sed 's/.*=//')
 echo \{\"apiUrl\":\"https://unicorn.underyx.me:54638/api\",\"certSha256\":\"${SHA}\"\}
-rm -rf ./cert/
+rm -rf cert
 ```
