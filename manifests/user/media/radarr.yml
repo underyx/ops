@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/radarr:3.0.0.2282-ls37
+          image: linuxserver/radarr:3.0.0.2585-ls1
           ports:
             - containerPort: 7878
           env:

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: deluge-config-pvc
+  name: qbittorrent-config-pvc
   namespace: media
   labels:
-    app: deluge
+    app: qbittorrent
 spec:
   storageClassName: rook-ceph-block
   accessModes:
@@ -16,51 +16,32 @@ spec:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: deluge
+  name: qbittorrent
   namespace: media
   labels:
-    app: deluge
+    app: qbittorrent
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: deluge
+      app: qbittorrent
   template:
     metadata:
       labels:
-        app: deluge
+        app: qbittorrent
     spec:
       containers:
         - name: app
-          image: linuxserver/deluge:2.0.3-2201906121747ubuntu18.04.1-ls47
+          image: linuxserver/qbittorrent:4.3.0202001241706-6844-07c22f8ubuntu18.04.1-ls46
           ports:
-            - containerPort: 8112
+            - containerPort: 8080
             - containerPort: 45401
               hostPort: 45401
-            - containerPort: 45402
-              hostPort: 45402
-            - containerPort: 45403
-              hostPort: 45403
-            - containerPort: 45404
-              hostPort: 45404
-            - containerPort: 45405
-              hostPort: 45405
+              protocol: TCP
             - containerPort: 45401
               hostPort: 45401
-              protocol: UDP
-            - containerPort: 45402
-              hostPort: 45402
-              protocol: UDP
-            - containerPort: 45403
-              hostPort: 45403
-              protocol: UDP
-            - containerPort: 45404
-              hostPort: 45404
-              protocol: UDP
-            - containerPort: 45405
-              hostPort: 45405
               protocol: UDP
           env:
             - name: PUID
@@ -68,9 +49,9 @@ spec:
             - name: PGID
               value: "797"
           volumeMounts:
-            - name: deluge-config
+            - name: qbittorrent-config
               mountPath: /config
-            - name: deluge-media
+            - name: qbittorrent-media
               mountPath: /media
             - name: localtime
               mountPath: /etc/localtime
@@ -78,7 +59,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 8112
+              port: 8080
             initialDelaySeconds: 30
             periodSeconds: 30
           resources:
@@ -89,10 +70,10 @@ spec:
               cpu: 200m
               memory: 512Mi
       volumes:
-        - name: deluge-config
+        - name: qbittorrent-config
           persistentVolumeClaim:
-            claimName: deluge-config-pvc
-        - name: deluge-media
+            claimName: qbittorrent-config-pvc
+        - name: qbittorrent-media
           persistentVolumeClaim:
             claimName: media-pvc
         - name: localtime
@@ -104,33 +85,33 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: deluge-svc
+  name: qbittorrent-svc
   namespace: media
 spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8112
+      targetPort: 8080
   selector:
-    app: deluge
+    app: qbittorrent
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: deluge-ingress
+  name: qbittorrent-ingress
   namespace: media
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
-    - host: deluge.underyx.me
+    - host: qbittorrent.underyx.me
       http:
         paths:
           - backend:
-              serviceName: deluge-svc
+              serviceName: qbittorrent-svc
               servicePort: 80
             path: /
   tls:
     - hosts:
-        - deluge.underyx.me
-      secretName: deluge-tls
+        - qbittorrent.underyx.me
+      secretName: qbittorrent-tls
