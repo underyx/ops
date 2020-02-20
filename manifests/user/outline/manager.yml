@@ -34,7 +34,7 @@ spec:
           mountPath: /tmp
       containers:
       - name: manager
-        image: quay.io/outline/shadowbox:daily-2019-12-27
+        image: quay.io/outline/shadowbox:daily-2020-02-19
         env:
         - name: SB_CERTIFICATE_FILE
           value: "/tmp/shadowbox-selfsigned-dev.crt"

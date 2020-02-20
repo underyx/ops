@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: shadowbox
-        image: quay.io/outline/shadowbox:daily-2019-12-27
+        image: quay.io/outline/shadowbox:daily-2020-02-19
         lifecycle:
           postStart:
             exec:
