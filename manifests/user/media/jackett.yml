@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/jackett:v0.12.1638-ls51
+          image: linuxserver/jackett:v0.16.895-ls10
           ports:
             - containerPort: 9117
           env:

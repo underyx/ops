@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/bazarr:e7d7ad40-ls70
+          image: linuxserver/bazarr:a9da6e33-ls31
           ports:
             - containerPort: 6767
           env:
