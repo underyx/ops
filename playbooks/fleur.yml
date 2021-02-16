@@ -1,0 +1,10 @@
+---
+- hosts: fleur.underyx.me
+  roles:
+    - common
+    - users
+    - ntp
+    - ssh
+    - apt
+    - k8s-master
+  become: yes

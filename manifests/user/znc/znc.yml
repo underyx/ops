@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: znc:1.7-slim
+          image: znc:1.8-slim
           ports:
             - containerPort: 6697
               hostPort: 6697
@@ -48,7 +48,7 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 50m
+              cpu: "1"
               memory: 32Mi
             requests:
               cpu: 20m

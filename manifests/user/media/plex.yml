@@ -35,6 +35,7 @@ spec:
       containers:
         - name: app
           image: plexinc/pms-docker:public
+          command: [sleep, "100000000000000"]
           ports:
             - containerPort: 3005
               hostPort: 3005

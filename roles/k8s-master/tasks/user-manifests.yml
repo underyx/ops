@@ -2,4 +2,4 @@
   copy: src=manifests/user dest=/tmp/manifests
 
 - name: apply user manifests
-  command: kubectl apply -f /tmp/manifests/user
+  command: kubectl apply --recursive -f /tmp/manifests/user

@@ -13,11 +13,17 @@
 - name: apply dashboard
   command: kubectl apply -f /tmp/manifests/system/kubernetes-dashboard
 
+- name: apply postgres operator
+  command: kubectl apply -f /tmp/manifests/system/postgres/operator.yml
+
+- name: apply rook common
+  command: kubectl apply -f /tmp/manifests/system/rook/00-common.yml
+
 - name: apply rook operator
-  command: kubectl apply -f /tmp/manifests/system/rook/operator.yml
+  command: kubectl apply -f /tmp/manifests/system/rook/00-operator.yml
 
 - name: wait for rook operator to be deployed
-  command: kubectl rollout status -n rook-ceph-system deployment rook-ceph-operator
+  command: kubectl rollout status -n rook-ceph deployment rook-ceph-operator
 
 - name: apply rook
   command: kubectl apply -f /tmp/manifests/system/rook

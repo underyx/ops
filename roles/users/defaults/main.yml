@@ -1,3 +1,3 @@
 user: underyx
-key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBFaKRTeYRayZWfFssS8rv6uWW4r+Ajes6BbAuF70CB2Vpln+QsK84qvG1/dA0VYoXQGo1CgPH4JLmzFKtPj48NDwU725PAd1Ws8GXpo5E+CDigF5FZZedN4ZflSOv9scjQiJzrxzgBARi9AdV7dQxYPooaHgjL8L6cik81e2VQlAShSUVF0EpalZt6q0dpJeFG/z+8zlv5K0DL1IeDUmFLoXxNBPxf42qmnHpzYRCWDHV0PSS+y716HpcjDCDtupJkETKK3yU63bsI57mWG8t3V0DsHZRHz1KH9lWfJYXppj/wg/9OV1jbu3Htp9Y0wLaSWjA+Aha8eRYHoO7qLA7 bence@underyx.me
+key: https://github.com/underyx.keys
 shell: /bin/bash

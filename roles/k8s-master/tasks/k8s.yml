@@ -1,6 +1,15 @@
 - name: install prerequisites
   apt: pkg=apt-transport-https update_cache=yes state=latest
 
+- name: disable swapfile
+  shell: swapoff -a
+
+- name: disable swapfile in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+swa?p?\s+.*)$'
+    replace: '# \1'
+
 - name: add google's apt key
   apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
 
@@ -22,16 +31,10 @@
     - kubectl
 
 - name: initialize cluster
-  command: kubeadm init --pod-network-cidr=10.244.0.0/16  # the pod network cidr is for flannel
-  ignore_errors: yes  # fails on re-run
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16 # the pod network cidr is for flannel
+  ignore_errors: yes # fails on re-run
 
-- name: listen on port 10255 for datadog
-  lineinfile:
-    path: /etc/default/kubelet
-    regexp: '^KUBELET_EXTRA_ARGS='
-    line: 'KUBELET_EXTRA_ARGS=--read-only-port=10255'
-
-- name: set bridge-nf-call-iptables  # flannel docs asked for this maybe?
+- name: set bridge-nf-call-iptables # flannel docs asked for this maybe?
   sysctl:
     name: net.bridge.bridge-nf-call-iptables
     value: 1
@@ -39,7 +42,7 @@
     state: present
     reload: yes
 
-- name: set inotify.max_user_watches  # https://github.com/rook/rook/issues/2568#issuecomment-464522993
+- name: set inotify.max_user_watches # https://github.com/rook/rook/issues/2568#issuecomment-464522993
   sysctl:
     name: fs.inotify.max_user_watches
     value: 524288
@@ -67,4 +70,4 @@
 - name: allow scheduling on master node
   command: kubectl taint nodes --all node-role.kubernetes.io/master-
   become_user: "{{ user }}"
-  ignore_errors: yes  # fails on re-run
+  ignore_errors: yes # fails on re-run

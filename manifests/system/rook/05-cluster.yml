@@ -5,24 +5,29 @@ metadata:
   namespace: rook-ceph
 spec:
   cephVersion:
-    image: ceph/ceph:v14.2.5-20191210
+    image: ceph/ceph:v15.2.4
     allowUnsupported: false
   dataDirHostPath: /var/lib/rook
   mon:
     count: 3
     allowMultiplePerNode: true
+  mgr:
+    modules:
+      # Several modules should not need to be included in this list. The "dashboard" and "monitoring" modules
+      # are already enabled by other settings in the cluster CR and the "rook" module is always enabled.
+      - name: pg_autoscaler
+        enabled: true
   dashboard:
     enabled: true
     ssl: true
   network:
-    hostNetwork: false
+  crashCollector:
+    disable: false
   rbdMirroring:
     workers: 0
   resources:
   storage: # cluster level storage configuration and selection
     useAllNodes: true
-    useAllDevices: false
-    directories:
-      - path: /rook/storage-dir
+    useAllDevices: true
     config:
       osdsPerDevice: "1" # this value can be overridden at the node or device level
