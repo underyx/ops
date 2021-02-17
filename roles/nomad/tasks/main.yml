@@ -1,8 +1,2 @@
-- name: add hashicorp apt key
-  apt_key: url=https://apt.releases.hashicorp.com/gpg
-
-- name: add hashicorp apt repo
-  apt_repository: repo="deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release | lower }} main"
-
-- name: install nomad
-  apt: pkg=nomad update_cache=yes state=latest
+- include: firewall.yml
+- include: nomad.yml

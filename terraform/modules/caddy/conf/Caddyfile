@@ -1,0 +1,8 @@
+underyx.me {
+    {{ range service "underyx-me" }}
+    reverse_proxy {{ .Address }}:{{ .Port }}
+    {{ end }}
+    tls {
+	    dns cloudflare "${cloudflare_api_token}"
+    }
+}
