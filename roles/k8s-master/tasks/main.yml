@@ -1,5 +1,4 @@
 - include: firewall.yml
-- include: docker.yml
 - include: k8s.yml
 - include: system-manifests.yml
   become_user: "{{ user }}"

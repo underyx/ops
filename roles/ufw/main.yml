@@ -1,0 +1,20 @@
+- name: install ufw
+  apt: pkg=ufw update_cache=yes state=latest
+
+- name: reset ufw
+  ufw:
+    state: reset
+
+- name: enable ufw logging
+  ufw:
+    logging: on
+
+- name: rate limit SSH connections
+  ufw:
+    rule: limit
+    proto: tcp
+    port: ssh
+
+- name: enable ufw
+  ufw:
+    state: enabled

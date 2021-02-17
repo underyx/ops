@@ -6,5 +6,6 @@
    - ntp
    - ssh
    - apt
-   - k8s-master
+   - docker
+   - nomad
   become: yes
