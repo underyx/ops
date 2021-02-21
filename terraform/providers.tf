@@ -4,5 +4,5 @@ provider "cloudflare" {
 
 provider "nomad" {
   # DNS record is missing when first applying, gotta use IP address
-  address = "http://144.76.111.239:4646"
+  address = "http://${local.ips.unicorn_tailscale}:4646"
 }

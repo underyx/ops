@@ -7,5 +7,7 @@
    - ssh
    - apt
    - docker
+   - tailscale
+   - consul
    - nomad
   become: yes

@@ -26,9 +26,9 @@ resource "cloudflare_record" "root" {
   name    = "@"
   type    = "CNAME"
   ttl     = "1"
-  proxied = "false"
+  proxied = "true"
 
-  value = "unicorn.underyx.me"
+  value = "underyx-me.netlify.app"
 }
 
 resource "cloudflare_record" "www" {
@@ -37,7 +37,7 @@ resource "cloudflare_record" "www" {
   name    = "www"
   type    = "CNAME"
   ttl     = "1"
-  proxied = "false"
+  proxied = "true"
 
-  value = "unicorn.underyx.me"
+  value = "underyx-me.netlify.app"
 }

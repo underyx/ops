@@ -1,0 +1,42 @@
+- name: add hashicorp apt key
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+
+- name: add hashicorp apt repo
+  apt_repository:
+    repo: >
+      deb [arch=amd64] https://apt.releases.hashicorp.com
+      {{ ansible_distribution_release | lower }} main
+
+- name: install consul
+  apt: pkg=consul update_cache=yes state=latest
+
+- name: create consul directory
+  file:
+    path: /opt/consul
+    state: directory
+    owner: consul
+    group: consul
+
+- name: check if consul config file has encryption key
+  lineinfile:
+    path: /etc/consul.d/consul.hcl
+    regexp: '^encrypt.+$'
+    state: absent
+  check_mode: true
+  changed_when: false
+  register: consul_config
+
+- name: generate token
+  command: consul keygen
+  register: consul_keygen
+  when: not consul_config.found
+
+- name: create consul config file
+  template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    owner: consul
+    group: consul
+    mode: "0600"
+  when: not consul_config.found

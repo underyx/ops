@@ -1,4 +1,5 @@
 data_dir  = "/opt/nomad/data"
+bind_addr = "{{ GetInterfaceIP \"tailscale0\" }}"
 datacenter = "unicorn"
 
 server {
@@ -12,4 +13,12 @@ client {
     "docker.volumes.enabled" = true,
     "driver.raw_exec.enable" = "1"
   }
+  host_network "tailscale" {
+    cidr = "{{ GetInterfaceIP \"tailscale0\" }}/32"
+    reserved_ports = "22"
+  }
+}
+
+consul {
+  address = "{{ GetInterfaceIP \"tailscale0\" }}:8500"
 }

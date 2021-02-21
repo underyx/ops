@@ -1,0 +1,15 @@
+datacenter = "unicorn"
+data_dir = "/opt/consul/data"
+server = true
+bootstrap_expect = 1
+{% raw %}
+client_addr = "{{ GetInterfaceIP \"tailscale0\" }}"
+{% endraw %}
+bind_addr = "127.0.0.1"
+encrypt = "{{ consul_keygen.stdout }}"
+ui_config {
+  enabled = true
+}
+connect {
+  enabled = true
+}
