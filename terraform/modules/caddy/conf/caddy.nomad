@@ -6,14 +6,14 @@ job "caddy" {
     count = 1
 
     network {
-      port "https-public" {
-        static = 80
-        to     = 80
+      port "http-internal" {
+        static       = 80
+        to           = 80
       }
 
-      port "http-public" {
-        static = 443
-        to     = 443
+      port "https-internal" {
+        static       = 443
+        to           = 443
       }
     }
 
@@ -24,11 +24,53 @@ job "caddy" {
       mode     = "fail"
     }
 
+
     task "internal" {
       driver = "docker"
 
       config {
-        image = "caddy:2.2.1-alpine"
+        image = "caddy:2.3.0"
+
+        # Bind the config file to container.
+        mount {
+          type   = "bind"
+          source = "configs"
+          target = "/etc/caddy" # Bind mount the template from `NOMAD_TASK_DIR`.
+        }
+
+        # Bind the data directory to preserve certs.
+        mount {
+          type     = "bind"
+          target   = "/data"
+          source   = "/data/caddy"
+          readonly = false
+        }
+
+        ports = ["http-internal", "https-internal"]
+      }
+
+      resources {
+        cpu    = 100
+        memory = 50
+      }
+
+      template {
+        data = <<EOF
+${caddyfile_internal}
+EOF
+
+        destination = "configs/Caddyfile" # Rendered template.
+
+        # Caddy doesn't support reload via signals as of
+        change_mode = "restart"
+      }
+    }
+
+    task "public" {
+      driver = "docker"
+
+      config {
+        image = "caddy:2.3.0"
 
         # Bind the config file to container.
         mount {
@@ -50,17 +92,17 @@ job "caddy" {
 
       resources {
         cpu    = 100
-        memory = 100
+        memory = 50
       }
 
       template {
         data = <<EOF
-${caddyfile}
+${caddyfile_public}
 EOF
 
         destination = "configs/Caddyfile" # Rendered template.
 
-        # Caddy doesn't support reload via signals
+        # Caddy doesn't support reload via signals as of
         change_mode = "restart"
       }
     }

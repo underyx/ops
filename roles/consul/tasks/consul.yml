@@ -40,3 +40,6 @@
     group: consul
     mode: "0600"
   when: not consul_config.found
+
+- name: set consul to start on launch
+  service: name=consul enabled=yes

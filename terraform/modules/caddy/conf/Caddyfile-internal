@@ -1,0 +1,13 @@
+nomad.underyx.me {
+    reverse_proxy ${self_internal_ip}:4646
+    tls {
+	    dns cloudflare "${cloudflare_api_token}"
+    }
+}
+
+consul.underyx.me {
+    reverse_proxy ${self_internal_ip}:8500
+    tls {
+	    dns cloudflare "${cloudflare_api_token}"
+    }
+}

@@ -9,13 +9,22 @@ server {
 
 client {
   enabled       = true
+  network_interface = "tailscale0"
+
   options = {
-    "docker.volumes.enabled" = true,
-    "driver.raw_exec.enable" = "1"
+    "docker.volumes.enabled" = true
   }
-  host_network "tailscale" {
-    cidr = "{{ GetInterfaceIP \"tailscale0\" }}/32"
+
+  reserved {
     reserved_ports = "22"
+  }
+
+  host_network "tailscale" {
+    cidr = "100.64.0.0/10"
+  }
+
+  host_network "public" {
+    cidr = "144.76.111.225/32"
   }
 }
 

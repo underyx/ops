@@ -8,5 +8,12 @@ locals {
 
 variable "cloudflare_api_token" {
   type        = string
+  sensitive = true
   description = "Cloudflare API token, needs Zone:Edit, DNS:Edit"
+}
+
+variable "plex_claim_token" {
+  type        = string
+  sensitive = true
+  description = "Token from https://www.plex.tv/claim/"
 }

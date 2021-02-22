@@ -35,3 +35,6 @@
     group: root
     mode: 0600
   notify: restart nomad
+
+- name: set nomad to start on launch
+  service: name=nomad enabled=yes

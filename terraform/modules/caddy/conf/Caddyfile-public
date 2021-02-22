@@ -1,5 +1,5 @@
-underyx.me {
-    {{ range service "underyx-me" }}
+plex.underyx.me {
+    {{ range service "plex" }}
     reverse_proxy {{ .Address }}:{{ .Port }}
     {{ end }}
     tls {
