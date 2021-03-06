@@ -9,11 +9,25 @@ job "caddy" {
       port "http-internal" {
         static       = 80
         to           = 80
+        host_network = "tailscale"
       }
 
       port "https-internal" {
         static       = 443
         to           = 443
+        host_network = "tailscale"
+      }
+
+      port "http-public" {
+        static       = 80
+        to           = 80
+        host_network = "public"
+      }
+
+      port "https-public" {
+        static       = 443
+        to           = 443
+        host_network = "public"
       }
     }
 

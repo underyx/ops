@@ -9,7 +9,6 @@ server {
 
 client {
   enabled       = true
-  network_interface = "tailscale0"
 
   options = {
     "docker.volumes.enabled" = true
@@ -21,10 +20,12 @@ client {
 
   host_network "tailscale" {
     cidr = "100.64.0.0/10"
+    interface = "tailscale0"
   }
 
   host_network "public" {
     cidr = "144.76.111.225/32"
+    reserved_ports = "22"
   }
 }
 
