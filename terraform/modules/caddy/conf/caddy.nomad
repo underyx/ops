@@ -21,13 +21,11 @@ job "caddy" {
       port "http-public" {
         static       = 80
         to           = 80
-        host_network = "public"
       }
 
       port "https-public" {
         static       = 443
         to           = 443
-        host_network = "public"
       }
     }
 
@@ -43,7 +41,7 @@ job "caddy" {
       driver = "docker"
 
       config {
-        image = "caddy:2.3.0"
+        image = "ghcr.io/underyx/caddy"
 
         # Bind the config file to container.
         mount {
@@ -73,9 +71,7 @@ job "caddy" {
 ${caddyfile_internal}
 EOF
 
-        destination = "configs/Caddyfile" # Rendered template.
-
-        # Caddy doesn't support reload via signals as of
+        destination = "configs/Caddyfile"
         change_mode = "restart"
       }
     }
@@ -84,7 +80,7 @@ EOF
       driver = "docker"
 
       config {
-        image = "caddy:2.3.0"
+        image = "ghcr.io/underyx/caddy"
 
         # Bind the config file to container.
         mount {
@@ -114,9 +110,7 @@ EOF
 ${caddyfile_public}
 EOF
 
-        destination = "configs/Caddyfile" # Rendered template.
-
-        # Caddy doesn't support reload via signals as of
+        destination = "configs/Caddyfile"
         change_mode = "restart"
       }
     }

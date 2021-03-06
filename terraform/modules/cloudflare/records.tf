@@ -72,5 +72,5 @@ resource "cloudflare_record" "plex" {
   ttl     = "1"
   proxied = "false"
 
-  value = "internal.unicorn.underyx.me"
+  value = "unicorn.underyx.me"
 }

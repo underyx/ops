@@ -8,6 +8,7 @@ job "plex" {
     network {
       port "http" {
         to = 32400
+        host_network = "tailscale"
       }
     }
 

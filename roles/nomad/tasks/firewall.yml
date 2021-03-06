@@ -27,3 +27,17 @@
     proto: udp
     port: "4648"
     comment: Nomad Serf WAN UDP
+
+- name: allow Nomad cluster services TCP
+  ufw:
+    rule: allow
+    proto: tcp
+    port: "20000:32000"
+    comment: Nomad cluster services TCP
+
+- name: allow Nomad cluster services UDP
+  ufw:
+    rule: allow
+    proto: udp
+    port: "20000:32000"
+    comment: Nomad cluster services UDP
