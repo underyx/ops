@@ -27,3 +27,20 @@
   command: tailscale status
   changed_when: false
   register: tailscale_status
+
+# https://tailscale.com/kb/1104/enable-ip-forwarding
+- name: Enable IPv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Enable IPv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes

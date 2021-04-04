@@ -22,3 +22,10 @@ module "media" {
     nomad = nomad
   }
 }
+
+module "images" {
+  source = "./modules/images"
+  providers = {
+    nomad = nomad
+  }
+}

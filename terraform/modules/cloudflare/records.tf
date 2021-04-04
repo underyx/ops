@@ -74,3 +74,14 @@ resource "cloudflare_record" "plex" {
 
   value = "unicorn.underyx.me"
 }
+
+resource "cloudflare_record" "i" {
+  zone_id = cloudflare_zone.underyx_me.id
+
+  name    = "i"
+  type    = "CNAME"
+  ttl     = "1"
+  proxied = "false"
+
+  value = "unicorn.underyx.me"
+}
