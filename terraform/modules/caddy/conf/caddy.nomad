@@ -62,8 +62,8 @@ job "caddy" {
       }
 
       resources {
-        cpu    = 100
-        memory = 50
+        cpu    = 200
+        memory = 200
       }
 
       template {
@@ -102,7 +102,7 @@ EOF
 
       resources {
         cpu    = 100
-        memory = 50
+        memory = 200
       }
 
       template {

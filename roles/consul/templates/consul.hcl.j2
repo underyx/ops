@@ -2,6 +2,7 @@ datacenter = "unicorn"
 data_dir = "/opt/consul/data"
 server = true
 bootstrap_expect = 1
+enable_syslog = true
 {% raw %}
 client_addr = "{{ GetInterfaceIP \"tailscale0\" }}"
 {% endraw %}

@@ -29,3 +29,20 @@ module "images" {
     nomad = nomad
   }
 }
+
+module "db" {
+  source = "./modules/db"
+  postgres_password = var.postgres_password
+  providers = {
+    nomad = nomad
+  }
+}
+
+module "miniflux" {
+  source = "./modules/miniflux"
+  postgres_password = var.postgres_password
+  miniflux_admin_password = var.miniflux_admin_password
+  providers = {
+    nomad = nomad
+  }
+}

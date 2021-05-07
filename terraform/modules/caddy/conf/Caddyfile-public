@@ -6,3 +6,21 @@ plex.underyx.me {
 	    dns cloudflare "${cloudflare_api_token}"
     }
 }
+
+i.underyx.me {
+    {{ range service "images-web" }}
+    reverse_proxy {{ .Address }}:{{ .Port }}
+    {{ end }}
+    tls {
+	    dns cloudflare "${cloudflare_api_token}"
+    }
+}
+
+news.underyx.me {
+    {{ range service "miniflux-web" }}
+    reverse_proxy {{ .Address }}:{{ .Port }}
+    {{ end }}
+    tls {
+	    dns cloudflare "${cloudflare_api_token}"
+    }
+}
