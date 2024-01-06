@@ -1,6 +1,0 @@
-- include: firewall.yml
-- include: k8s.yml
-- include: system-manifests.yml
-  become_user: "{{ user }}"
-- include: user-manifests.yml
-  become_user: "{{ user }}"

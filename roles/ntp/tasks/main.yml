@@ -1,6 +1,6 @@
 ---
 - name: install apt package
-  apt: name=ntp state=present
+  apt: name=ntp update_cache=yes state=present
 
 - name: render ntp config
   template: src=ntp.conf.j2 dest=/etc/ntp.conf owner=root group=root mode=0644

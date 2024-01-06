@@ -1,0 +1,13 @@
+---
+- name: install iperf3 for benchmarking
+  apt: name=iperf3 state=present update_cache=yes
+
+- name: render network config
+  template: src=private.yaml.j2 dest=/etc/netplan/90-private.yaml owner=root group=root mode=0600
+  notify:
+    - restart systemd-networkd
+    - apply netplan config
+
+- name: ensure private interface is up
+  ansible.builtin.command:
+    cmd: ip link set {{ private_network_interface }} up

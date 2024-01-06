@@ -1,0 +1,23 @@
+- name: Install NFS server packages
+  apt:
+    name: nfs-kernel-server
+    state: present
+
+- name: Create NFS export directory
+  file:
+    path: "/mnt/nfs_share"
+    state: directory
+    mode: "0777"
+
+- name: Export the NFS directory
+  lineinfile:
+    path: /etc/exports
+    line: "/mnt/nfs_share {{ hostvars[nfs_client_host]['private_ip'] | regex_replace('(/24)','') }}/24(rw,sync,no_root_squash,no_subtree_check)"
+    state: present
+  notify: Restart NFS server
+
+- name: Enable and start NFS server
+  service:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes

@@ -1,0 +1,34 @@
+---
+- name: "Common Setup"
+  hosts: hosted
+  roles:
+    - common
+    - users
+    - ntp
+    - ssh
+    - apt
+  become: true
+
+- name: "Install Packages and Dotfiles"
+  hosts: hosted
+  roles:
+    - packages
+    - dotfiles
+  become: true
+
+- name: "Configure Dotfiles (Non-Privileged)"
+  hosts: hosted
+  roles:
+    - dotfiles
+
+- name: "Configure HostHatch Networking"
+  hosts: hosthatch
+  roles:
+    - hosthatch_networking
+  become: true
+
+- name: "Set Up Tailscale"
+  hosts: hosted
+  roles:
+    - tailscale
+  become: true

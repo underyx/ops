@@ -1,0 +1,9 @@
+network:
+    version: 2
+    ethernets:
+        {{ private_network_interface }}:
+            addresses:
+            - {{ private_ip }}
+            match:
+                macaddress: {{ ansible_ens4.macaddress }}
+            mtu: 9000  # jumbo frames work on hosthatch private networking

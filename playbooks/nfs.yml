@@ -1,0 +1,14 @@
+---
+- name: Set up NFS server on storage server
+  hosts: charon.bence.dev
+  become: true
+  roles:
+    - role: nfs_server
+      nfs_client_host: "aurora.bence.dev"
+
+- name: Set up NFS client on compute server
+  hosts: aurora.bence.dev
+  become: true
+  roles:
+    - role: nfs_client
+      nfs_server_host: "charon.bence.dev"

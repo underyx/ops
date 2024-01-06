@@ -1,0 +1,28 @@
+home:
+  hosts:
+    mission.bence.dev:
+
+storage:
+  hosts:
+    charon.bence.dev:
+
+compute:
+  hosts:
+    aurora.bence.dev:
+
+los_angeles:
+  hosts:
+    aurora.bence.dev:
+      private_network_interface: ens4
+      private_ip: 192.168.10.1/24
+    charon.bence.dev:
+      private_network_interface: ens4
+      private_ip: 192.168.10.2/24
+
+hosthatch:
+  children:
+    los_angeles:
+
+hosted:
+  children:
+    hosthatch:

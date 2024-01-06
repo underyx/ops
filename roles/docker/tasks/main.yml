@@ -1,8 +1,0 @@
-- name: install docker
-  apt: pkg=docker.io update_cache=yes state=latest
-
-- name: set docker to start on launch
-  service: name=docker enabled=yes
-
-- name: start docker
-  service: name=docker state=started

@@ -1,0 +1,19 @@
+---
+- name: Install NFS client packages
+  apt:
+    name: nfs-common
+    state: present
+
+- name: Create local mount point for NFS
+  file:
+    path: "/mnt/nfs_share"
+    state: directory
+    mode: "0777"
+
+- name: Mount NFS directory
+  mount:
+    path: "/mnt/nfs_share"
+    src: "{{ hostvars[nfs_server_host]['private_ip'] | regex_replace('(/24)','') }}:/mnt/nfs_share"
+    fstype: nfs
+    opts: defaults
+    state: mounted
