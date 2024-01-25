@@ -3,10 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: radarr-config-pvc
   namespace: media
-  labels:
-    app: radarr
 spec:
-  storageClassName: rook-ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -34,18 +31,19 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/radarr:3.0.0.3243-ls15
+          image: lscr.io/linuxserver/radarr:latest
           ports:
-            - containerPort: 7878
+            - name: http
+              containerPort: 7878
           env:
             - name: PUID
-              value: "797"
+              value: "1000"
             - name: PGID
-              value: "797"
+              value: "1000"
           volumeMounts:
-            - name: radarr-config
+            - name: config
               mountPath: /config
-            - name: radarr-media
+            - name: media
               mountPath: /media
             - name: localtime
               mountPath: /etc/localtime
@@ -61,16 +59,16 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 500m
+              cpu: 1
               memory: 512Mi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 256Mi
       volumes:
-        - name: radarr-config
+        - name: config
           persistentVolumeClaim:
             claimName: radarr-config-pvc
-        - name: radarr-media
+        - name: media
           persistentVolumeClaim:
             claimName: media-pvc
         - name: localtime
@@ -80,7 +78,7 @@ spec:
           hostPath:
             path: /dev/rtc
       securityContext:
-        fsGroup: 797
+        fsGroup: 1000
 ---
 kind: Service
 apiVersion: v1
@@ -89,28 +87,28 @@ metadata:
   namespace: media
 spec:
   ports:
-    - port: 80
+    - name: http
+      port: 7878
       targetPort: 7878
   selector:
     app: radarr
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: radarr-ingress
   namespace: media
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
-    - host: radarr.underyx.me
+    - host: radarr.bence.dev
       http:
         paths:
-          - backend:
-              serviceName: radarr-svc
-              servicePort: 80
-            path: /
-  tls:
-    - hosts:
-        - radarr.underyx.me
-      secretName: radarr-tls
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: radarr-svc
+                port:
+                  number: 7878

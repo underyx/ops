@@ -6,7 +6,6 @@ metadata:
   labels:
     app: jackett
 spec:
-  storageClassName: rook-ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -34,16 +33,17 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/jackett:v0.16.895-ls10
+          image: lscr.io/linuxserver/jackett:latest
           ports:
-            - containerPort: 9117
+            - name: http
+              containerPort: 9117
           env:
             - name: PUID
-              value: "797"
+              value: "1000"
             - name: PGID
-              value: "797"
+              value: "1000"
           volumeMounts:
-            - name: jackett-config
+            - name: config
               mountPath: /config
             - name: localtime
               mountPath: /etc/localtime
@@ -55,13 +55,13 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 200m
+              cpu: 1
               memory: 512Mi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 256Mi
       volumes:
-        - name: jackett-config
+        - name: config
           persistentVolumeClaim:
             claimName: jackett-config-pvc
         - name: localtime
@@ -77,28 +77,28 @@ metadata:
   namespace: media
 spec:
   ports:
-    - port: 80
-      targetPort: 9117
+    - name: http
+      port: 80
+      targetPort: http
   selector:
     app: jackett
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: jackett-ingress
   namespace: media
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
-    - host: jackett.underyx.me
+    - host: jackett.bence.dev
       http:
         paths:
-          - backend:
-              serviceName: jackett-svc
-              servicePort: 80
-            path: /
-  tls:
-    - hosts:
-        - jackett.underyx.me
-      secretName: jackett-tls
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: jackett-svc
+                port:
+                  name: http

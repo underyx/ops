@@ -17,28 +17,21 @@ spec:
     spec:
       containers:
         - name: app
-          image: miniflux/miniflux:2.0.19
+          image: miniflux/miniflux:2.0.51
           ports:
             - containerPort: 80
           env:
-            - name: DATABASE_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: miniflux.miniflux-db.credentials
-                  key: username
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: miniflux.miniflux-db.credentials
-                  key: password
             - name: DATABASE_URL
-              value: "postgres://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@miniflux-db/miniflux?sslmode=require"
+              valueFrom:
+                secretKeyRef:
+                  name: miniflux-db-app
+                  key: uri
             - name: RUN_MIGRATIONS
               value: "1"
             - name: CREATE_ADMIN
               value: "1"
             - name: BASE_URL
-              value: "https://news.underyx.me/"
+              value: "https://news.bence.dev/"
             - name: HTTPS
               value: "1"
             - name: ADMIN_USERNAME
@@ -74,23 +67,20 @@ spec:
       port: 8080
       targetPort: 8080
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: miniflux-ingress
   namespace: miniflux
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
-    - host: news.underyx.me
+    - host: news.bence.dev
       http:
         paths:
-          - backend:
-              serviceName: miniflux-svc
-              servicePort: 8080
-            path: /
-  tls:
-    - hosts:
-        - news.underyx.me
-      secretName: miniflux-tls
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: miniflux-svc
+                port:
+                  number: 8080

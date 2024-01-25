@@ -6,7 +6,6 @@ metadata:
   labels:
     app: deluge
 spec:
-  storageClassName: rook-ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -34,44 +33,25 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/deluge:2.0.3-2201906121747ubuntu18.04.1-ls71
+          image: lscr.io/linuxserver/deluge:latest
           ports:
             - containerPort: 8112
             - containerPort: 45401
               hostPort: 45401
-            - containerPort: 45402
-              hostPort: 45402
-            - containerPort: 45403
-              hostPort: 45403
-            - containerPort: 45404
-              hostPort: 45404
-            - containerPort: 45405
-              hostPort: 45405
             - containerPort: 45401
               hostPort: 45401
               protocol: UDP
-            - containerPort: 45402
-              hostPort: 45402
-              protocol: UDP
-            - containerPort: 45403
-              hostPort: 45403
-              protocol: UDP
-            - containerPort: 45404
-              hostPort: 45404
-              protocol: UDP
-            - containerPort: 45405
-              hostPort: 45405
-              protocol: UDP
           env:
             - name: PUID
-              value: "797"
+              value: "1000"
             - name: PGID
-              value: "797"
+              value: "1000"
           volumeMounts:
-            - name: deluge-config
+            - name: config
               mountPath: /config
-            - name: deluge-media
-              mountPath: /media
+            - name: media
+              mountPath: /dl
+              subPath: Downloads
             - name: localtime
               mountPath: /etc/localtime
               readOnly: true
@@ -83,23 +63,23 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 1000m
+              cpu: 1
               memory: 2Gi
             requests:
               cpu: 200m
               memory: 512Mi
       volumes:
-        - name: deluge-config
+        - name: config
           persistentVolumeClaim:
             claimName: deluge-config-pvc
-        - name: deluge-media
+        - name: media
           persistentVolumeClaim:
             claimName: media-pvc
         - name: localtime
           hostPath:
             path: /etc/localtime
       securityContext:
-        fsGroup: 797
+        fsGroup: 1000
 ---
 kind: Service
 apiVersion: v1
@@ -109,28 +89,27 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 80
+      port: 8112
       targetPort: 8112
   selector:
     app: deluge
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: deluge-ingress
   namespace: media
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
-    - host: deluge.underyx.me
+    - host: deluge.bence.dev
       http:
         paths:
-          - backend:
-              serviceName: deluge-svc
-              servicePort: 80
-            path: /
-  tls:
-    - hosts:
-        - deluge.underyx.me
-      secretName: deluge-tls
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: deluge-svc
+                port:
+                  name: http

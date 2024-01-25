@@ -1,18 +1,18 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: media
-  namespace: media
+  name: immich-pv
+  namespace: immich
 spec:
   capacity:
-    storage: 2000Gi
+    storage: 1000Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   local:
-    path: /mnt/nfs_share/media
+    path: /mnt/nfs_share/immich-pv
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -25,13 +25,13 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: media-pvc
-  namespace: media
+  name: immich-pvc
+  namespace: immich
 spec:
-  volumeName: media
+  volumeName: immich-pv
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 2000Gi
+      storage: 1000Gi

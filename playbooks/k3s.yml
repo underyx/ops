@@ -1,0 +1,8 @@
+---
+- name: Set up k3s on compute
+  hosts: aurora.bence.dev
+  become: true
+  roles:
+    - role: k3s
+      api_endpoint: aurora.bence.dev
+      ansible_user: "underyx"

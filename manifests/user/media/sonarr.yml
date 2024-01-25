@@ -3,10 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: sonarr-config-pvc
   namespace: media
-  labels:
-    app: sonarr
 spec:
-  storageClassName: rook-ceph-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -34,18 +31,19 @@ spec:
     spec:
       containers:
         - name: app
-          image: linuxserver/sonarr:3.0.3.899-ls32
+          image: lscr.io/linuxserver/sonarr:latest
           ports:
-            - containerPort: 8989
+            - name: http
+              containerPort: 8989
           env:
             - name: PUID
-              value: "797"
+              value: "1000"
             - name: PGID
-              value: "797"
+              value: "1000"
           volumeMounts:
-            - name: sonarr-config
+            - name: config
               mountPath: /config
-            - name: sonarr-media
+            - name: media
               mountPath: /media
             - name: localtime
               mountPath: /etc/localtime
@@ -61,16 +59,16 @@ spec:
             periodSeconds: 30
           resources:
             limits:
-              cpu: 500m
+              cpu: 1
               memory: 512Mi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 256Mi
       volumes:
-        - name: sonarr-config
+        - name: config
           persistentVolumeClaim:
             claimName: sonarr-config-pvc
-        - name: sonarr-media
+        - name: media
           persistentVolumeClaim:
             claimName: media-pvc
         - name: localtime
@@ -80,7 +78,7 @@ spec:
           hostPath:
             path: /dev/rtc
       securityContext:
-        fsGroup: 797
+        fsGroup: 1000
 ---
 kind: Service
 apiVersion: v1
@@ -89,28 +87,28 @@ metadata:
   namespace: media
 spec:
   ports:
-    - port: 80
+    - name: http
+      port: 8989
       targetPort: 8989
   selector:
     app: sonarr
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: sonarr-ingress
   namespace: media
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
-    - host: sonarr.underyx.me
+    - host: sonarr.bence.dev
       http:
         paths:
-          - backend:
-              serviceName: sonarr-svc
-              servicePort: 80
-            path: /
-  tls:
-    - hosts:
-        - sonarr.underyx.me
-      secretName: sonarr-tls
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: sonarr-svc
+                port:
+                  number: 8989
