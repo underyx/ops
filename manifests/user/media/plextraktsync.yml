@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plextraktsync-config-pvc
+  namespace: media
+  labels:
+    app: plextraktsync
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: plextraktsync
+  namespace: media
+spec:
+  schedule: "33 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: plextraktsync
+              image: ghcr.io/taxel/plextraktsync
+              args:
+                - sync
+              volumeMounts:
+                - name: config
+                  mountPath: /app/config
+              env:
+                - name: PUID
+                  value: "1000"
+                - name: PGID
+                  value: "1000"
+                - name: TZ
+                  value: "America/Los_Angeles"
+          restartPolicy: OnFailure
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: plextraktsync-config-pvc
