@@ -1,42 +1,40 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jackett-config-pvc
+  name: readarr-config-pvc
   namespace: media
-  labels:
-    app: jackett
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Mi
+      storage: 1Gi
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: jackett
+  name: readarr
   namespace: media
   labels:
-    app: jackett
+    app: readarr
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: jackett
+      app: readarr
   template:
     metadata:
       labels:
-        app: jackett
+        app: readarr
     spec:
       containers:
         - name: app
-          image: lscr.io/linuxserver/jackett:latest
+          image: lscr.io/linuxserver/readarr:develop
           ports:
             - name: http
-              containerPort: 9117
+              containerPort: 8787
           env:
             - name: PUID
               value: "1000"
@@ -45,12 +43,18 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: media
+              mountPath: /media
             - name: localtime
               mountPath: /etc/localtime
               readOnly: true
+            - name: rtc
+              mountPath: /dev/rtc
+              readOnly: true
           livenessProbe:
-            tcpSocket:
-              port: 9117
+            httpGet:
+              path: /
+              port: 8787
             initialDelaySeconds: 30
             periodSeconds: 30
           resources:
@@ -63,42 +67,48 @@ spec:
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: jackett-config-pvc
+            claimName: readarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
         - name: localtime
           hostPath:
             path: /etc/localtime
+        - name: rtc
+          hostPath:
+            path: /dev/rtc
       securityContext:
-        fsGroup: 797
+        fsGroup: 1000
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: jackett-svc
+  name: readarr-svc
   namespace: media
 spec:
   ports:
     - name: http
-      port: 80
-      targetPort: http
+      port: 8787
+      targetPort: 8787
   selector:
-    app: jackett
+    app: readarr
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: jackett-ingress
+  name: readarr-ingress
   namespace: media
   annotations:
     traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
-    - host: jackett.bence.dev
+    - host: readarr.bence.dev
       http:
         paths:
           - pathType: Prefix
             path: "/"
             backend:
               service:
-                name: jackett-svc
+                name: readarr-svc
                 port:
-                  name: http
+                  number: 8787
