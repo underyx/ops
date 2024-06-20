@@ -1,0 +1,41 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: couchdb
+  namespace: kube-system
+spec:
+  repo: https://apache.github.io/couchdb-helm
+  chart: couchdb
+  targetNamespace: obsidian
+  valuesContent: |-
+    clusterSize: 1
+    autoSetup:
+      enabled: true
+    persistentVolume:
+      enabled: true
+      existingClaims: [obsidian-pvc]
+      storageClass: "-"
+    ingress:
+      enabled: true
+      hostname: obsidian.bence.dev
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    couchdbConfig:
+      couchdb:
+        max_document_size: "50000000"
+      chttpd:
+        max_http_request_size: "4294967296"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1
+        memory: 256Gi
+    initResources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 128Mi
