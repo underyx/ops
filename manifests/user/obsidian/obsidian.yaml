@@ -6,6 +6,7 @@ metadata:
 spec:
   repo: https://apache.github.io/couchdb-helm
   chart: couchdb
+  createNamespace: true
   targetNamespace: obsidian
   valuesContent: |-
     clusterSize: 1
@@ -13,18 +14,42 @@ spec:
       enabled: true
     persistentVolume:
       enabled: true
-      existingClaims: [obsidian-pvc]
-      storageClass: "-"
+      storageClass: local-path
+      accessModes:
+        - ReadWriteOnce
+      size: 2Gi
+      existingClaims:
+      - volumeName: database-storage
+        persistentVolumeName: obsidian-pv
+        claimName: obsidian-pvc
+        volumeSource:
+          local:
+            path: /mnt/nfs_share/obsidian-pv
+          nodeAffinity:
+            required:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                        - aurora.bence.dev
     ingress:
       enabled: true
-      hostname: obsidian.bence.dev
+      hosts:
+        - obsidian.bence.dev
       annotations:
         traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
     couchdbConfig:
       couchdb:
+        uuid: 0190386f-9f97-7fab-8603-21e5be017d85
         max_document_size: "50000000"
       chttpd:
+        enable_cors: "true"
+        require_valid_user: "true"
         max_http_request_size: "4294967296"
+      cors:
+        origins: "app://obsidian.md,capacitor://localhost,http://localhost"
+        credentials: "true"
     resources:
       requests:
         cpu: 100m
