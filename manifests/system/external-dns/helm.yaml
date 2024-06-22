@@ -1,0 +1,24 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: external-dns
+  namespace: kube-system
+spec:
+  repo: https://kubernetes-sigs.github.io/external-dns/
+  chart: external-dns
+  targetNamespace: kube-system
+  valuesContent: |-
+    provider:
+      name: cloudflare
+    deploymentAnnotations:
+      operator.1password.io/item-path: "vaults/aurora/items/cloudflare-api-token"
+      operator.1password.io/item-name: cloudflare-api-token
+    env:
+      - name: CF_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cloudflare-api-token
+            key: credential
+    sources:
+      - ingress
+    txtOwnerId: aurora.bence.dev

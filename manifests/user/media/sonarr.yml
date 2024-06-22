@@ -99,7 +99,7 @@ metadata:
   name: sonarr-ingress
   namespace: media
   annotations:
-    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   rules:
     - host: sonarr.bence.dev

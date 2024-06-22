@@ -72,6 +72,8 @@ kind: Ingress
 metadata:
   name: miniflux-ingress
   namespace: miniflux
+  annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
 spec:
   rules:
     - host: news.bence.dev

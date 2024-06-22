@@ -37,8 +37,6 @@ spec:
       enabled: true
       hosts:
         - obsidian.bence.dev
-      annotations:
-        traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
     couchdbConfig:
       couchdb:
         uuid: 0190386f-9f97-7fab-8603-21e5be017d85

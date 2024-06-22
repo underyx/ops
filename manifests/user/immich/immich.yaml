@@ -10,12 +10,16 @@ spec:
   valuesContent: |-
     image:
       tag: v1.106.4
-    ingress:
-      main:
-        enabled: true
-        hostname: photos.bence.dev
-        annotations:
-          traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    server:
+      ingress:
+        main:
+          enabled: true
+          hosts:
+          - host: photos.bence.dev
+            paths:
+              - path: "/"
+          annotations:
+            external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     immich:
       persistence:
         library:
