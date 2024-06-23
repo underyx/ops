@@ -28,6 +28,9 @@ spec:
       app: plex
   template:
     metadata:
+      annotations:
+        operator.1password.io/item-path: "vaults/aurora/items/plex-claim-token"
+        operator.1password.io/item-name: plex-claim-token
       labels:
         app: plex
     spec:
@@ -47,8 +50,8 @@ spec:
             - name: PLEX_CLAIM
               valueFrom:
                 secretKeyRef:
-                  name: plex-env
-                  key: PLEX_CLAIM
+                  name: plex-claim-token
+                  key: credential
             - name: ADVERTISE_IP
               value: plex.bence.dev:443
           volumeMounts:
@@ -104,6 +107,7 @@ metadata:
   namespace: media
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
     - host: plex.bence.dev

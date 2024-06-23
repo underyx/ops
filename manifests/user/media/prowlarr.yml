@@ -95,6 +95,7 @@ metadata:
   namespace: media
   annotations:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 spec:
   rules:
     - host: prowlarr.bence.dev
