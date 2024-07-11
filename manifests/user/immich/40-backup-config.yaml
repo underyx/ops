@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rustic-config
+  namespace: immich
+data:
+  db.toml: |
+    [repository]
+    repository = "opendal:s3"
+    repo-hot = "opendal:s3"
+
+    [repository.options]
+    bucket = "aurora-backups"
+    endpoint = "https://s3.nl-ams.scw.cloud"
+    region = "nl-ams"
+
+    [repository.options-cold]
+    root = "/immich-db"
+    storage_class = "GLACIER"
+
+    [repository.options-hot]
+    root = "/immich-db.hot"
+
+    [forget]
+    keep-daily = 2
+    keep-weekly = 2
+  library.toml: |
+    [repository]
+    repository = "opendal:s3"
+    repo-hot = "opendal:s3"
+
+    [repository.options]
+    bucket = "aurora-backups"
+    endpoint = "https://s3.nl-ams.scw.cloud"
+    region = "nl-ams"
+
+    [repository.options-cold]
+    root = "/immich-library"
+    storage_class = "GLACIER"
+
+    [repository.options-hot]
+    root = "/immich-library.hot"
+
+    [forget]
+    keep-daily = 1

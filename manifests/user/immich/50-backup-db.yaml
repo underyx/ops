@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-db
+  namespace: immich
+spec:
+  schedule: "7 10 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: rustic
+              image: yeicor/rustic:v0.7.0
+              env:
+                - name: PGHOST
+                  value: "immich-postgresql.immich.svc.cluster.local"
+                - name: PGUSER
+                  value: immich
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-postgresql
+                      key: password
+                - name: PGDATABASE
+                  value: immich
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: rustic-scaleway-credentials
+                      key: username
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: rustic-scaleway-credentials
+                      key: credential
+                - name: RUSTIC_PASSWORD_FILE
+                  value: /etc/rustic-password/password
+                - name: RUSTIC_CACHE_DIR
+                  value: /cache
+                - name: RUSTIC_USE_PROFILE
+                  value: db
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  apt-get update \
+                  && apt-get install -y postgresql-common \
+                  && YES=1 /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh \
+                  && apt-get update \
+                  && apt-get install -y postgresql-client-16 \
+                  && echo "$PGHOST:5432:$PGDATABASE:$PGUSER:$PGPASSWORD" > ~/.pgpass \
+                  && pg_dumpall --clean --if-exists > /db_dumps/dump.sql \
+                  && rustic backup /db_dumps/dump.sql \
+                  && rustic forget --prune
+              volumeMounts:
+                - name: backup-volume
+                  mountPath: /db_dumps
+                - name: cache-volume
+                  mountPath: /cache
+                - name: rustic-password-volume
+                  mountPath: /etc/rustic-password
+                  readOnly: true
+                - name: rustic-config-volume
+                  mountPath: /etc/rustic
+                  readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-volume
+              emptyDir: {}
+            - name: cache-volume
+              emptyDir: {}
+            - name: rustic-password-volume
+              secret:
+                secretName: rustic-encryption-password
+                items:
+                  - key: password
+                    path: password
+            - name: rustic-config-volume
+              configMap:
+                name: rustic-config

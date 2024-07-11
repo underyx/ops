@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-library
+  namespace: immich
+spec:
+  schedule: "14 11 * * 5"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: rustic
+              image: yeicor/rustic:v0.7.0
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: rustic-scaleway-credentials
+                      key: username
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: rustic-scaleway-credentials
+                      key: credential
+                - name: RUSTIC_PASSWORD_FILE
+                  value: /etc/rustic-password/password
+                - name: RUSTIC_CACHE_DIR
+                  value: /cache
+                - name: RUSTIC_USE_PROFILE
+                  value: library
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  rustic backup /mnt/nfs_share/immich-pv/upload \
+                  && rustic forget --prune
+              volumeMounts:
+                - name: library-volume
+                  mountPath: /mnt/nfs_share/immich-pv
+                  readOnly: true
+                - name: cache-volume
+                  mountPath: /cache
+                - name: rustic-password-volume
+                  mountPath: /etc/rustic-password
+                  readOnly: true
+                - name: rustic-config-volume
+                  mountPath: /etc/rustic
+                  readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+            - name: library-volume
+              persistentVolumeClaim:
+                claimName: immich-pvc
+            - name: cache-volume
+              emptyDir: {}
+            - name: rustic-password-volume
+              secret:
+                secretName: rustic-encryption-password
+                items:
+                  - key: password
+                    path: password
+            - name: rustic-config-volume
+              configMap:
+                name: rustic-config
