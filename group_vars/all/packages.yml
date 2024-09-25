@@ -7,7 +7,6 @@ common_apt_packages:
   - git
   - htop
   - neovim
-  - ntp
   - python3-pip
   - python3-venv
   - tmux

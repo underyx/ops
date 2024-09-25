@@ -10,7 +10,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 - name: install pipx
-  pip: name=pipx state=latest
+  pip: name=pipx state=latest break_system_packages=yes
 
 - name: install/update common python packages
   community.general.pipx: name={{ item }}

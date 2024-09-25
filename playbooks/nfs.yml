@@ -1,14 +1,17 @@
 ---
 - name: Set up NFS server on storage server
-  hosts: charon.bence.dev
+  hosts: karen.bence.dev
   become: true
   roles:
     - role: nfs_server
       nfs_client_host: "aurora.bence.dev"
+      nfs_server_mount_path: "/mnt/nfs_share"
 
 - name: Set up NFS client on compute server
   hosts: aurora.bence.dev
   become: true
   roles:
     - role: nfs_client
-      nfs_server_host: "charon.bence.dev"
+      nfs_server_host: "karen.bence.dev"
+      nfs_client_mount_path: "/mnt/nfs_share"
+      nfs_server_mount_path: "/mnt/nfs_share"

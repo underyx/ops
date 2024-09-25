@@ -1,3 +1,23 @@
+- name: Create mount point if it doesn't exist
+  file:
+    path: /mnt/nfs_share
+    state: directory
+
+- name: Mount the disk at /mnt/nfs_share
+  mount:
+    path: /mnt/nfs_share
+    src: /dev/vdb1
+    fstype: ext4
+    state: mounted
+
+- name: Ensure the mount persists across reboots
+  mount:
+    path: /mnt/nfs_share
+    src: /dev/vdb1
+    fstype: ext4
+    opts: defaults
+    state: present
+
 - name: Install NFS server packages
   apt:
     name: nfs-kernel-server
@@ -5,14 +25,14 @@
 
 - name: Create NFS export directory
   file:
-    path: "/mnt/nfs_share"
+    path: "{{ nfs_server_mount_path }}"
     state: directory
     mode: "0777"
 
 - name: Export the NFS directory
   lineinfile:
     path: /etc/exports
-    line: "/mnt/nfs_share {{ hostvars[nfs_client_host]['private_ip'] | regex_replace('(/24)','') }}/24(rw,sync,no_root_squash,no_subtree_check)"
+    line: "{{ nfs_server_mount_path }} {{ hostvars[nfs_client_host]['private_ip'] | regex_replace('(/24)','') }}/24(rw,sync,no_root_squash,no_subtree_check)"
     state: present
   notify: Restart NFS server
 

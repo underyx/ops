@@ -4,7 +4,6 @@
   roles:
     - common
     - users
-    - ntp
     - ssh
     - apt
   become: true
@@ -26,9 +25,9 @@
   roles:
     - hosthatch_networking
   become: true
-
-- name: "Set Up Tailscale"
-  hosts: hosted
-  roles:
-    - tailscale
-  become: true
+  gather_facts: yes
+# - name: "Set Up Tailscale"
+#   hosts: hosted
+#   roles:
+#     - tailscale
+#   become: true

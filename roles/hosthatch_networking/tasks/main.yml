@@ -1,9 +1,21 @@
 ---
+- name: set MAC address dynamically for private network interface
+  set_fact:
+    private_macaddress: "{{ ansible_facts[private_network_interface].macaddress }}"
+
 - name: install iperf3 for benchmarking
   apt: name=iperf3 state=present update_cache=yes
 
 - name: render network config
-  template: src=private.yaml.j2 dest=/etc/netplan/90-private.yaml owner=root group=root mode=0600
+  template:
+    src: private.yaml.j2
+    dest: /etc/netplan/90-private.yaml
+    owner: root
+    group: root
+    mode: "0600"
+  vars:
+    private_macaddress: "{{ private_macaddress }}"
+
   notify:
     - restart systemd-networkd
     - apply netplan config

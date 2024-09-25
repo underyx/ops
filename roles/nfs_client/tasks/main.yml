@@ -6,14 +6,14 @@
 
 - name: Create local mount point for NFS
   file:
-    path: "/mnt/nfs_share"
+    path: "{{ nfs_client_mount_path }}"
     state: directory
     mode: "0777"
 
 - name: Mount NFS directory
   mount:
-    path: "/mnt/nfs_share"
-    src: "{{ hostvars[nfs_server_host]['private_ip'] | regex_replace('(/24)','') }}:/mnt/nfs_share"
+    path: "{{ nfs_client_mount_path }}"
+    src: "{{ hostvars[nfs_server_host]['private_ip'] | regex_replace('(/24)','') }}:{{ nfs_server_mount_path }}"
     fstype: nfs
     opts: defaults
     state: mounted

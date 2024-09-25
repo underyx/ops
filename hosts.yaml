@@ -4,7 +4,7 @@ home:
 
 storage:
   hosts:
-    charon.bence.dev:
+    karen.bence.dev:
 
 compute:
   hosts:
@@ -15,9 +15,9 @@ los_angeles:
     aurora.bence.dev:
       private_network_interface: ens4
       private_ip: 192.168.10.1/24
-    charon.bence.dev:
-      private_network_interface: ens4
-      private_ip: 192.168.10.2/24
+    karen.bence.dev:
+      private_network_interface: enp2s0
+      private_ip: 192.168.10.3/24
 
 hosthatch:
   children:
