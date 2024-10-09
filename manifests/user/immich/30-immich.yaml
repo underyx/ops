@@ -9,7 +9,7 @@ spec:
   targetNamespace: immich
   valuesContent: |-
     image:
-      tag: v1.115.0
+      tag: v1.117.0
     server:
       ingress:
         main:
