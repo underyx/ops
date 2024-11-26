@@ -26,3 +26,5 @@ hosthatch:
 hosted:
   children:
     hosthatch:
+  vars:
+    ansible_ssh_user: underyx
