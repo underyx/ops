@@ -86,6 +86,7 @@ spec:
             claimName: media-pvc
       securityContext:
         fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
 ---
 kind: Service
 apiVersion: v1
