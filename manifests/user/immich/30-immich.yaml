@@ -9,7 +9,7 @@ spec:
   targetNamespace: immich
   valuesContent: |-
     image:
-      tag: v1.117.0
+      tag: v1.121.0
     server:
       ingress:
         main:
@@ -31,5 +31,13 @@ spec:
       enabled: true
       image:
         tag: pg16-v0.2.1
+      primary:
+        resources:
+          limits:
+            cpu: 1
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 512Mi
     redis:
       enabled: true
