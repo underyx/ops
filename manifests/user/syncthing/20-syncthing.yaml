@@ -1,0 +1,26 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: syncthing
+  namespace: syncthing
+spec:
+  repo: https://k8s-home-lab.github.io/helm-charts/
+  chart: syncthing
+  targetNamespace: syncthing
+  valuesContent: |-
+    image:
+      tag: 1.27.12
+    persistence:
+      data:
+        enabled: true
+        existingClaim: syncthing-pvc
+    ingress:
+      main:
+        enabled: true
+        hosts:
+        - host: drive.bence.dev
+          paths:
+            - path: "/"
+        annotations:
+          external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+          traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
