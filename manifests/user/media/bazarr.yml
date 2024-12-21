@@ -113,4 +113,4 @@ spec:
               service:
                 name: bazarr-svc
                 port:
-                  number: 7878
+                  number: 6767
